@@ -53,4 +53,8 @@ export class UsersService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async findByUsername(username: string) {
+    return await this.userRepository.findOne({ where: { username } });
+  }
 }
