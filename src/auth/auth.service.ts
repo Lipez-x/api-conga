@@ -1,10 +1,30 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
+import { User } from './interfaces/user.interface';
+import { UserPayload } from './interfaces/user.payload';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly usersService: UsersService,
+  ) {}
+
+  async login(user: User) {
+    const userPayload: UserPayload = {
+      sub: user.id,
+      username: user.username,
+      role: user.role,
+    };
+
+    const token = this.jwtService.sign(userPayload);
+
+    return {
+      access_token: token,
+    };
+  }
 
   async validateUser(username: string, password: string) {
     const user = await this.usersService.findByUsername(username);
