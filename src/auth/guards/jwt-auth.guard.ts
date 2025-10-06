@@ -1,7 +1,13 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from 'src/common/decorators/is-public.decorator';
+import { User } from '../interfaces/user.interface';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -15,15 +21,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getClass(),
     ]);
 
-    if (isPublic) {
-      return true;
-    }
-
-    const canActivate = super.canActivate(context);
-    if (typeof canActivate === 'boolean') {
-      return canActivate;
-    }
+    if (isPublic) return true;
 
     return super.canActivate(context);
+  }
+
+  handleRequest(err, user, info, context: ExecutionContext) {
+    if (err || !user) {
+      throw new UnauthorizedException('Token inválido ou ausente');
+    }
+
+    return user;
   }
 }

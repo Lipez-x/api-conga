@@ -4,8 +4,6 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { error } from 'console';
-import path from 'path';
 
 export class AllExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
