@@ -4,6 +4,10 @@ import { UserRole } from '../enums/user-role.enum';
 export class RegisterUserDto {
   @IsString()
   @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
   username: string;
 
   @IsEnum(UserRole)

@@ -19,8 +19,8 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async register(registerUserDto: RegisterUserDto): Promise<User> {
-    const { username, role, password, confirmPassword } = registerUserDto;
+  async register(registerUserDto: RegisterUserDto) {
+    const { name, username, role, password, confirmPassword } = registerUserDto;
 
     if (password != confirmPassword) {
       throw new BadRequestException('A senha não foi confirmada corretamente');
@@ -41,13 +41,17 @@ export class UsersService {
 
     try {
       const createUser = this.userRepository.create({
+        name,
         username,
         role,
         hashedPassword,
       });
 
       await this.userRepository.save(createUser);
-      return createUser;
+      return {
+        ...createUser,
+        hashedPassword: undefined,
+      };
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);

@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { UsersService } from './users.service';
+import { IsPublic } from 'src/common/decorators/is-public.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -15,6 +16,7 @@ export class UsersController {
 
   constructor(private readonly usersService: UsersService) {}
 
+  @IsPublic()
   @Post('/register')
   @UsePipes(ValidationPipe)
   async register(@Body() registerUserDto: RegisterUserDto) {
