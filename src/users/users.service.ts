@@ -36,7 +36,7 @@ export class UsersService {
       );
     }
 
-    const salt = await bcrypt.genSalt(16);
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     try {
