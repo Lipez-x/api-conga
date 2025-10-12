@@ -5,12 +5,15 @@ import { User } from './interfaces/user.interface';
 import { UserPayload } from './interfaces/user.payload';
 import { JwtService } from '@nestjs/jwt';
 import { UserToken } from './interfaces/user-token';
+import { LoginAttemptsService } from './login-attempts/login-attempts.service';
+import { LoginLog } from './interfaces/login-log';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    private readonly loginAttemptsService: LoginAttemptsService,
   ) {}
 
   async login(user: User): Promise<UserToken> {
@@ -38,6 +41,12 @@ export class AuthService {
       );
 
       if (isValidPassword) {
+        const loginLogSuccess: LoginLog = {
+          username: username,
+          success: true,
+        };
+
+        await this.loginAttemptsService.register(loginLogSuccess);
         return {
           ...user,
           hashedPassword: undefined,
@@ -45,6 +54,12 @@ export class AuthService {
       }
     }
 
+    const loginLogError: LoginLog = {
+      username: username,
+      success: false,
+    };
+
+    await this.loginAttemptsService.register(loginLogError);
     throw new BadRequestException(
       'O username ou a senha informados não estão corretos',
     );

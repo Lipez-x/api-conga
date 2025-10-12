@@ -19,7 +19,7 @@ export class LoginAttempt {
   @Column({ nullable: true })
   ip?: string;
 
-  @Column()
+  @Column({ nullable: true })
   userAgent?: string;
 
   @CreateDateColumn()
