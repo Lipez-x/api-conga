@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { User } from './interfaces/user.interface';
@@ -33,6 +37,14 @@ export class AuthService {
 
   async validateUser(username: string, password: string) {
     const user = await this.usersService.findByUsername(username);
+
+    const blocked = await this.loginAttemptsService.isBlocked(username);
+
+    if (blocked) {
+      throw new UnauthorizedException(
+        'Tentativas de login temporariamente bloqueadas',
+      );
+    }
 
     if (user) {
       const isValidPassword = await bcrypt.compare(

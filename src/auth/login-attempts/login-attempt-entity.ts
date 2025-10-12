@@ -16,12 +16,6 @@ export class LoginAttempt {
   @Column()
   success: boolean;
 
-  @Column({ nullable: true })
-  ip?: string;
-
-  @Column({ nullable: true })
-  userAgent?: string;
-
   @CreateDateColumn()
   createdAt: Date;
 }
