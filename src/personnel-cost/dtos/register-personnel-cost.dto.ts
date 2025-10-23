@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { CostType } from '../enums/cost-type.enum';
 
-export class RegisterPersonnelCost {
+export class RegisterPersonnelCostDto {
   @IsEnum(CostType)
   @IsNotEmpty()
   type: CostType;
