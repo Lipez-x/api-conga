@@ -1,8 +1,9 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { PersonnelCostService } from './personnel-cost.service';
 import { RegisterPersonnelCostDto } from './dtos/register-personnel-cost.dto';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
+import { PersonnelCostFilterDto } from './dtos/personnel-cost-filter.dto';
 
 @Roles(UserRole.ADMIN)
 @Controller('personnel-cost')
@@ -12,5 +13,10 @@ export class PersonnelCostController {
   @Post('/register')
   async register(@Body() registerPersonnelCostDto: RegisterPersonnelCostDto) {
     return await this.personnelCostService.register(registerPersonnelCostDto);
+  }
+
+  @Get()
+  async findAll(@Query() filters: PersonnelCostFilterDto) {
+    return await this.personnelCostService.findAll(filters);
   }
 }
