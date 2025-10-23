@@ -10,8 +10,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { LoginAttempt } from './auth/login-attempts/login-attempt-entity';
 import { PersonnelCostModule } from './personnel-cost/personnel-cost.module';
-import { PerssonnelCostController } from './perssonnel-cost/perssonnel-cost.controller';
-import { PersonnelCostModule } from './personnel-cost/personnel-cost.module';
+import { PersonnelCost } from './personnel-cost/entities/personnel-cost.entity';
+import { PersonnelCostController } from './personnel-cost/personnel-cost.controller';
 
 @Module({
   imports: [
@@ -25,14 +25,14 @@ import { PersonnelCostModule } from './personnel-cost/personnel-cost.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, LoginAttempt],
+      entities: [User, LoginAttempt, PersonnelCost],
       synchronize: true,
     }),
     UsersModule,
     AuthModule,
     PersonnelCostModule,
   ],
-  controllers: [AppController, PerssonnelCostController],
+  controllers: [AppController, PersonnelCostController],
   providers: [
     AppService,
     {
