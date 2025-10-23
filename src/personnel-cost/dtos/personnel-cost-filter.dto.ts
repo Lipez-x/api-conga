@@ -1,5 +1,5 @@
 import {
-  IsDate,
+  IsDateString,
   IsEnum,
   IsNumber,
   IsOptional,
@@ -7,6 +7,7 @@ import {
   Min,
 } from 'class-validator';
 import { CostType } from '../enums/cost-type.enum';
+import { Type } from 'class-transformer';
 
 export class PersonnelCostFilterDto {
   @IsOptional()
@@ -14,19 +15,21 @@ export class PersonnelCostFilterDto {
   type?: CostType;
 
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   dateFrom?: Date;
 
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   dateTo?: Date;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   minValue?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   maxValue?: number;
@@ -36,11 +39,13 @@ export class PersonnelCostFilterDto {
   description?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(1)
   page?: number = 1;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(1)
   limit?: number = 10;

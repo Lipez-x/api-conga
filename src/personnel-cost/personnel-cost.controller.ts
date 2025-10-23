@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { PersonnelCostService } from './personnel-cost.service';
 import { RegisterPersonnelCostDto } from './dtos/register-personnel-cost.dto';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -16,6 +24,7 @@ export class PersonnelCostController {
   }
 
   @Get()
+  @UsePipes(ValidationPipe)
   async findAll(@Query() filters: PersonnelCostFilterDto) {
     return await this.personnelCostService.findAll(filters);
   }
