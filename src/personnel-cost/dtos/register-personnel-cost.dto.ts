@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsOptional,
+  IsString,
   Matches,
 } from 'class-validator';
 import { CostType } from '../enums/cost-type.enum';
@@ -21,6 +22,7 @@ export class RegisterPersonnelCostDto {
   @IsNotEmpty()
   value: string;
 
-  @IsOptional()
-  description?: string;
+  @IsString()
+  @IsNotEmpty()
+  description: string;
 }
