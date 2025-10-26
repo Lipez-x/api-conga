@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseUUIDPipe,
   Post,
   Query,
   UsePipes,
@@ -27,5 +29,10 @@ export class PersonnelCostController {
   @UsePipes(ValidationPipe)
   async findAll(@Query() filters: PersonnelCostFilterDto) {
     return await this.personnelCostService.findAll(filters);
+  }
+
+  @Get(':id')
+  async findById(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.personnelCostService.findById(id);
   }
 }

@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { RegisterPersonnelCostDto } from './dtos/register-personnel-cost.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -68,6 +69,25 @@ export class PersonnelCostService {
         totalPages: Math.ceil(total / limit),
         data,
       };
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async findById(id: string) {
+    try {
+      const personnelCost = await this.personnelCostRepository.findOne({
+        where: { id },
+      });
+
+      if (!personnelCost) {
+        throw new NotFoundException(
+          `Custo com pessoal de id ${id} não encontrado`,
+        );
+      }
+
+      return personnelCost;
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
