@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { User } from 'src/users/entities/user.entity';
 import { LoginAttempt } from 'src/auth/login-attempts/login-attempt-entity';
+import { PersonnelCost } from 'src/personnel-cost/entities/personnel-cost.entity';
 dotenv.config();
 
 export const AppDataSource = new DataSource({
@@ -12,6 +13,6 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User, LoginAttempt],
+  entities: [User, LoginAttempt, PersonnelCost],
   migrations: ['src/database/migrations/*.ts'],
 });
