@@ -12,6 +12,7 @@ import { LoginAttempt } from './auth/login-attempts/login-attempt-entity';
 import { PersonnelCostModule } from './personnel-cost/personnel-cost.module';
 import { PersonnelCost } from './personnel-cost/entities/personnel-cost.entity';
 import { PersonnelCostController } from './personnel-cost/personnel-cost.controller';
+import { UtilityCostModule } from './utility-cost/utility-cost.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { PersonnelCostController } from './personnel-cost/personnel-cost.control
     UsersModule,
     AuthModule,
     PersonnelCostModule,
+    UtilityCostModule,
   ],
   controllers: [AppController, PersonnelCostController],
   providers: [
