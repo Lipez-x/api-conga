@@ -91,25 +91,36 @@ export class PersonnelCostService {
       return personnelCost;
     } catch (error) {
       this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(error.message);
     }
   }
 
   async update(id: string, updatePersonnelCostDto: UpdatePersonnelCostDto) {
-    const personnelCost = await this.personnelCostRepository.preload({
-      id,
-      ...updatePersonnelCostDto,
-    });
-
-    if (!personnelCost) {
-      throw new NotFoundException(
-        `Custo com pessoal de id ${id} não encontrado`,
-      );
-    }
     try {
+      const personnelCost = await this.personnelCostRepository.preload({
+        id,
+        ...updatePersonnelCostDto,
+      });
+
+      if (!personnelCost) {
+        throw new NotFoundException(
+          `Custo com pessoal de id ${id} não encontrado`,
+        );
+      }
+
       return await this.personnelCostRepository.save(personnelCost);
     } catch (error) {
       this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(error.message);
     }
   }
