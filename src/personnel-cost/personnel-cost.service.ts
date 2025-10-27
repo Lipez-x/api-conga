@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PersonnelCost } from './entities/personnel-cost.entity';
 import { Repository } from 'typeorm';
 import { PersonnelCostFilterDto } from './dtos/personnel-cost-filter.dto';
+import { UpdatePersonnelCostDto } from './dtos/update-personnel-cost.dto';
 
 @Injectable()
 export class PersonnelCostService {
@@ -88,6 +89,25 @@ export class PersonnelCostService {
       }
 
       return personnelCost;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async update(id: string, updatePersonnelCostDto: UpdatePersonnelCostDto) {
+    const personnelCost = await this.personnelCostRepository.preload({
+      id,
+      ...updatePersonnelCostDto,
+    });
+
+    if (!personnelCost) {
+      throw new NotFoundException(
+        `Custo com pessoal de id ${id} não encontrado`,
+      );
+    }
+    try {
+      return await this.personnelCostRepository.save(personnelCost);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
