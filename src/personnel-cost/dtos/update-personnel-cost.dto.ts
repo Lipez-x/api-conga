@@ -2,27 +2,25 @@ import {
   IsDateString,
   IsDecimal,
   IsEnum,
-  IsNotEmpty,
   IsOptional,
   IsString,
-  Matches,
 } from 'class-validator';
 import { CostType } from '../enums/cost-type.enum';
 
-export class RegisterPersonnelCostDto {
+export class UpdatePersonnelCostDto {
   @IsEnum(CostType)
-  @IsNotEmpty()
+  @IsOptional()
   type: CostType;
 
   @IsDateString()
-  @IsNotEmpty()
+  @IsOptional()
   date: string;
 
   @IsDecimal({ decimal_digits: '2' })
-  @IsNotEmpty()
+  @IsOptional()
   value: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   description: string;
 }

@@ -26,7 +26,7 @@ import { PersonnelCostController } from './personnel-cost/personnel-cost.control
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [User, LoginAttempt, PersonnelCost],
-      synchronize: true,
+      synchronize: false,
     }),
     UsersModule,
     AuthModule,
