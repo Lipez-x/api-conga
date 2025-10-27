@@ -124,4 +124,29 @@ export class PersonnelCostService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async delete(id: string) {
+    try {
+      const personnelCost = await this.personnelCostRepository.findOne({
+        where: { id },
+      });
+
+      if (!personnelCost) {
+        throw new NotFoundException(
+          `Custo com pessoal de id ${id} não encontrado`,
+        );
+      }
+
+      await this.personnelCostRepository.delete(personnelCost);
+      return { message: `Custo com pessoal id(${id}) deletado com sucesso` };
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

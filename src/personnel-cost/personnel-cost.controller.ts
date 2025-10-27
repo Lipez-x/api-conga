@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -44,5 +45,10 @@ export class PersonnelCostController {
     @Body() updatePersonnelCostDto: UpdatePersonnelCostDto,
   ) {
     return await this.personnelCostService.update(id, updatePersonnelCostDto);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.personnelCostService.delete(id);
   }
 }
