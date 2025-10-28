@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { RegisterUtilityCostDto } from './dtos/register-utility-cost.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -69,6 +70,30 @@ export class UtilityCostService {
       };
     } catch (error) {
       this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async findById(id: string) {
+    try {
+      const utilityCost = await this.utilityCostRepository.findOne({
+        where: { id },
+      });
+
+      if (!utilityCost) {
+        throw new NotFoundException(
+          `Custo com utilidade de id ${id} não encontrado`,
+        );
+      }
+
+      return utilityCost;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(error.message);
     }
   }

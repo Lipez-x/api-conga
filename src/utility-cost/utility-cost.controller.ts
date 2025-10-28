@@ -3,6 +3,8 @@ import {
   Controller,
   Get,
   Logger,
+  Param,
+  ParseUUIDPipe,
   Post,
   Query,
   UsePipes,
@@ -29,5 +31,11 @@ export class UtilityCostController {
   @UsePipes(ValidationPipe)
   async findAll(@Query() filters: UtilityCostFilterDto) {
     return await this.utilityCostService.findAll(filters);
+  }
+
+  @Get(':id')
+  @UsePipes(ValidationPipe)
+  async findById(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.utilityCostService.findById(id);
   }
 }
