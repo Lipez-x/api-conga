@@ -11,7 +11,8 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { LoginAttempt } from './auth/login-attempts/login-attempt-entity';
 import { PersonnelCostModule } from './personnel-cost/personnel-cost.module';
 import { PersonnelCost } from './personnel-cost/entities/personnel-cost.entity';
-import { PersonnelCostController } from './personnel-cost/personnel-cost.controller';
+import { UtilityCostModule } from './utility-cost/utility-cost.module';
+import { UtilityCost } from './utility-cost/entities/utility-cost.entity';
 
 @Module({
   imports: [
@@ -25,14 +26,15 @@ import { PersonnelCostController } from './personnel-cost/personnel-cost.control
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, LoginAttempt, PersonnelCost],
+      entities: [User, LoginAttempt, PersonnelCost, UtilityCost],
       synchronize: false,
     }),
     UsersModule,
     AuthModule,
     PersonnelCostModule,
+    UtilityCostModule,
   ],
-  controllers: [AppController, PersonnelCostController],
+  controllers: [AppController],
   providers: [
     AppService,
     {
