@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Logger,
   Param,
@@ -47,5 +48,10 @@ export class UtilityCostController {
     @Body() updateUtilityCostDto: UpdateUtilityCostDto,
   ) {
     return await this.utilityCostService.update(id, updateUtilityCostDto);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.utilityCostService.delete(id);
   }
 }

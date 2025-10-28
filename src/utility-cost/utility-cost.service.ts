@@ -123,4 +123,29 @@ export class UtilityCostService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async delete(id: string) {
+    try {
+      const utilityCost = await this.utilityCostRepository.findOne({
+        where: { id },
+      });
+
+      if (!utilityCost) {
+        throw new NotFoundException(
+          `Custo com utilidade de id ${id} não encontrado`,
+        );
+      }
+
+      await this.utilityCostRepository.delete(utilityCost);
+      return { message: `Custo com utilidade id(${id}) deletado com sucesso` };
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }
