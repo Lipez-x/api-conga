@@ -7,6 +7,7 @@ import { RegisterUtilityCostDto } from './dtos/register-utility-cost.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UtilityCost } from './entities/utility-cost.entity';
 import { Repository } from 'typeorm';
+import { UtilityCostFilterDto } from './dtos/utility-cost-filter.dto';
 
 @Injectable()
 export class UtilityCostService {
@@ -23,6 +24,49 @@ export class UtilityCostService {
       });
 
       return await this.utilityCostRepository.save(utilityCost);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async findAll(filters: UtilityCostFilterDto) {
+    const {
+      type,
+      dateFrom,
+      dateTo,
+      minValue,
+      maxValue,
+      observations,
+      page = 1,
+      limit = 10,
+    } = filters;
+
+    const query = this.utilityCostRepository.createQueryBuilder('cost');
+
+    if (type) query.andWhere('cost.type = :type', { type });
+    if (dateFrom) query.andWhere('cost.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('cost.date <= :dateTo', { dateTo });
+    if (minValue) query.andWhere('cost.value >= :minValue', { minValue });
+    if (maxValue) query.andWhere('cost.value <= :maxValue', { maxValue });
+    if (observations)
+      query.andWhere('cost.observations ILIKE :description', {
+        description: `%${observations}%`,
+      });
+
+    try {
+      const [data, total] = await query
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
+
+      return {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        data,
+      };
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
