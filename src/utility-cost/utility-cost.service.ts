@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UtilityCost } from './entities/utility-cost.entity';
 import { Repository } from 'typeorm';
 import { UtilityCostFilterDto } from './dtos/utility-cost-filter.dto';
+import { UpdateUtilityCostDto } from './dtos/update-utility-cost.dto';
 
 @Injectable()
 export class UtilityCostService {
@@ -87,6 +88,31 @@ export class UtilityCostService {
       }
 
       return utilityCost;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async update(id: string, updateUtilityCostDto: UpdateUtilityCostDto) {
+    try {
+      const utilityCost = await this.utilityCostRepository.preload({
+        id,
+        ...updateUtilityCostDto,
+      });
+
+      if (!utilityCost) {
+        throw new NotFoundException(
+          `Custo com utilidade de id ${id} não encontrado`,
+        );
+      }
+
+      return await this.utilityCostRepository.save(utilityCost);
     } catch (error) {
       this.logger.error(error.message);
 

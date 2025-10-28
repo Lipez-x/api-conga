@@ -6,6 +6,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
   Query,
   UsePipes,
   ValidationPipe,
@@ -15,6 +16,7 @@ import { UtilityCostService } from './utility-cost.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { UtilityCostFilterDto } from './dtos/utility-cost-filter.dto';
+import { UpdateUtilityCostDto } from './dtos/update-utility-cost.dto';
 
 @Roles(UserRole.ADMIN)
 @Controller('utility-cost')
@@ -34,8 +36,16 @@ export class UtilityCostController {
   }
 
   @Get(':id')
-  @UsePipes(ValidationPipe)
   async findById(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.utilityCostService.findById(id);
+  }
+
+  @Put(':id')
+  @UsePipes(ValidationPipe)
+  async update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateUtilityCostDto: UpdateUtilityCostDto,
+  ) {
+    return await this.utilityCostService.update(id, updateUtilityCostDto);
   }
 }
