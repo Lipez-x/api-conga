@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Logger,
   Param,
@@ -54,5 +55,11 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return await this.usersService.updateCollaborator(id, updateUserDto);
+  }
+
+  @Delete(':id')
+  @UseInterceptors(CheckCollaboratorInterceptor)
+  async deleteCollaborator(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.usersService.deleteCollaborator(id);
   }
 }

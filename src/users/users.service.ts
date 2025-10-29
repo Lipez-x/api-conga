@@ -163,4 +163,27 @@ export class UsersService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async deleteCollaborator(id: string) {
+    try {
+      const personnelCost = await this.userRepository.findOne({
+        where: { id },
+      });
+
+      if (!personnelCost) {
+        throw new NotFoundException(`Usuário de id ${id} não encontrado`);
+      }
+
+      await this.userRepository.delete(personnelCost);
+      return { message: `Usuário com id(${id}) deletado com sucesso` };
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }
