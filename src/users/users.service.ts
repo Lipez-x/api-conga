@@ -151,7 +151,7 @@ export class UsersService {
       const updatedUser = await this.userRepository.save(user);
       return {
         ...updatedUser,
-        //hashedPassword: undefined,
+        hashedPassword: undefined,
       };
     } catch (error) {
       this.logger.error(error.message);
