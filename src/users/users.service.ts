@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -12,6 +13,8 @@ import { RegisterUserDto } from './dtos/register-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UserFilterDto } from './dtos/user-filter.dto';
 import { UserRole } from './enums/user-role.enum';
+import { UpdateUserDto } from './dtos/update-user.dto';
+import { use } from 'passport';
 
 @Injectable()
 export class UsersService {
@@ -65,7 +68,7 @@ export class UsersService {
 
     const query = this.userRepository
       .createQueryBuilder('users')
-      //.where('users.role = :role', { role: UserRole.COLLABORATOR })
+      .where('users.role = :role', { role: UserRole.COLLABORATOR })
       .select(['users.id', 'users.name', 'users.username', 'users.role']);
 
     if (name) query.andWhere('users.name ILIKE :name', { name: `%${name}%` });
@@ -102,5 +105,62 @@ export class UsersService {
       where: { id },
       select: ['id', 'name', 'username', 'role'],
     });
+  }
+
+  async updatePassword(password: string, confirmPassword: string) {
+    if (!password) return;
+    if (password !== confirmPassword) {
+      throw new BadRequestException('A senha não foi confirmada corretamente');
+    }
+
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    return hashedPassword;
+  }
+
+  async updateCollaborator(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.preload({
+      id,
+      ...updateUserDto,
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Usuário de id (${id}) não existe`);
+    }
+
+    if (updateUserDto.username != undefined) {
+      const existsUserByUsername = await this.userRepository.findOne({
+        where: { username: updateUserDto.username },
+      });
+
+      if (existsUserByUsername && existsUserByUsername.id !== user.id) {
+        throw new ConflictException(
+          'Já existe um usuário cadastro com esse username',
+        );
+      }
+    }
+
+    const hashedPassword = await this.updatePassword(
+      updateUserDto.password,
+      updateUserDto.confirmPassword,
+    );
+
+    hashedPassword ? (user.hashedPassword = hashedPassword) : undefined;
+    try {
+      const updatedUser = await this.userRepository.save(user);
+      return {
+        ...updatedUser,
+        //hashedPassword: undefined,
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }
