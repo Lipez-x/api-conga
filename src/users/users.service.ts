@@ -65,7 +65,7 @@ export class UsersService {
 
     const query = this.userRepository
       .createQueryBuilder('users')
-      .where('users.role = :role', { role: UserRole.COLLABORATOR })
+      //.where('users.role = :role', { role: UserRole.COLLABORATOR })
       .select(['users.id', 'users.name', 'users.username', 'users.role']);
 
     if (name) query.andWhere('users.name ILIKE :name', { name: `%${name}%` });
@@ -95,5 +95,12 @@ export class UsersService {
 
   async findByUsername(username: string) {
     return await this.userRepository.findOne({ where: { username } });
+  }
+
+  async findById(id: string) {
+    return await this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'name', 'username', 'role'],
+    });
   }
 }
