@@ -20,13 +20,8 @@ export class SuppliesService {
 
   async register(registerSuppliesDto: RegisterSuppliesDto) {
     try {
-      const { quantity, unitPrice } = registerSuppliesDto;
-
-      const totalCost = quantity * unitPrice;
-
       const supply = this.suppliesRepository.create({
         ...registerSuppliesDto,
-        totalCost: totalCost,
       });
 
       return await this.suppliesRepository.save(supply);

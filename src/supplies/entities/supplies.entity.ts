@@ -1,4 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('supplies')
 export class Supplies {
@@ -19,4 +25,12 @@ export class Supplies {
 
   @Column({ name: 'total_cost', type: 'decimal', precision: 10, scale: 2 })
   totalCost: number;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  calculateTotalCost() {
+    if (this.quantity && this.unitPrice) {
+      this.totalCost = Number(this.quantity) * Number(this.unitPrice);
+    }
+  }
 }
