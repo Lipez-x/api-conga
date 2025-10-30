@@ -19,6 +19,7 @@ export class RegisterSuppliesDto {
   date: Date;
 
   @Type(() => Number)
+  @IsNumber()
   @Min(0)
   quantity: number;
 
