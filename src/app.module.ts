@@ -13,6 +13,8 @@ import { PersonnelCostModule } from './personnel-cost/personnel-cost.module';
 import { PersonnelCost } from './personnel-cost/entities/personnel-cost.entity';
 import { UtilityCostModule } from './utility-cost/utility-cost.module';
 import { UtilityCost } from './utility-cost/entities/utility-cost.entity';
+import { SuppliesModule } from './supplies/supplies.module';
+import { Supplies } from './supplies/entities/supplies.entity';
 
 @Module({
   imports: [
@@ -26,13 +28,14 @@ import { UtilityCost } from './utility-cost/entities/utility-cost.entity';
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, LoginAttempt, PersonnelCost, UtilityCost],
+      entities: [User, LoginAttempt, PersonnelCost, UtilityCost, Supplies],
       synchronize: false,
     }),
     UsersModule,
     AuthModule,
     PersonnelCostModule,
     UtilityCostModule,
+    SuppliesModule,
   ],
   controllers: [AppController],
   providers: [
