@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -46,5 +47,10 @@ export class SuppliesController {
     @Body() updateSuppliesDto: UpdateSuppliesDto,
   ) {
     return await this.suppliesService.update(id, updateSuppliesDto);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.suppliesService.delete(id);
   }
 }

@@ -132,4 +132,29 @@ export class SuppliesService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async delete(id: string) {
+    try {
+      const supply = await this.suppliesRepository.findOne({
+        where: { id },
+      });
+
+      if (!supply) {
+        throw new NotFoundException(
+          `Custo com insumo de id ${id} não encontrado`,
+        );
+      }
+
+      await this.suppliesRepository.delete(id);
+      return { message: `Custo com insumo id(${id}) deletado com sucesso` };
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }
