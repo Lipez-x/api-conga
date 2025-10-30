@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Supplies } from './entities/supplies.entity';
 import { Repository } from 'typeorm';
 import { RegisterSuppliesDto } from './dtos/register-supplies.dto';
+import { FilterSuppliesDto } from './dtos/filter-supplies.dto';
 
 @Injectable()
 export class SuppliesService {
@@ -15,6 +16,7 @@ export class SuppliesService {
     @InjectRepository(Supplies)
     private readonly suppliesRepository: Repository<Supplies>,
   ) {}
+
   async register(registerSuppliesDto: RegisterSuppliesDto) {
     try {
       const { quantity, unitPrice } = registerSuppliesDto;
@@ -27,6 +29,58 @@ export class SuppliesService {
       });
 
       return await this.suppliesRepository.save(supply);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async findAll(filters: FilterSuppliesDto) {
+    const {
+      name,
+      dateFrom,
+      dateTo,
+      minQuantity,
+      maxQuantity,
+      minUnitPrice,
+      maxUnitPrice,
+      minTotal,
+      maxTotal,
+      page = 1,
+      limit = 10,
+    } = filters;
+
+    const query = this.suppliesRepository.createQueryBuilder('supplies');
+    if (name)
+      query.andWhere('supplies.name ILIKE :name', { name: `%${name}%` });
+    if (dateFrom) query.andWhere('supplies.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('supplies.date <= :dateTo', { dateTo });
+    if (minQuantity)
+      query.andWhere('supplies.quantity >= :minQuantity', { minQuantity });
+    if (maxQuantity)
+      query.andWhere('supplies.quantity <= :maxQuantity', { maxQuantity });
+    if (minUnitPrice)
+      query.andWhere('supplies.unit_price >= :minUnitPrice', { minUnitPrice });
+    if (maxUnitPrice)
+      query.andWhere('supplies.unit_price <= :maxUnitPrice', { maxUnitPrice });
+    if (minTotal)
+      query.andWhere('supplies.total_cost >= :minTotal', { minTotal });
+    if (maxTotal)
+      query.andWhere('supplies.total_cost <= :maxTotal', { maxTotal });
+
+    try {
+      const [data, total] = await query
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
+
+      return {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        data,
+      };
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);

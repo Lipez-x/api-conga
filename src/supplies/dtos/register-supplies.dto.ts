@@ -24,7 +24,7 @@ export class RegisterSuppliesDto {
   quantity: number;
 
   @Type(() => Number)
-  @IsDecimal()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   unitPrice: number;
 }
