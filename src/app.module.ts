@@ -13,6 +13,7 @@ import { PersonnelCostModule } from './personnel-cost/personnel-cost.module';
 import { PersonnelCost } from './personnel-cost/entities/personnel-cost.entity';
 import { UtilityCostModule } from './utility-cost/utility-cost.module';
 import { UtilityCost } from './utility-cost/entities/utility-cost.entity';
+import { SuppliesModule } from './supplies/supplies.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UtilityCost } from './utility-cost/entities/utility-cost.entity';
     AuthModule,
     PersonnelCostModule,
     UtilityCostModule,
+    SuppliesModule,
   ],
   controllers: [AppController],
   providers: [
