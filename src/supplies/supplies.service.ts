@@ -9,6 +9,7 @@ import { Supplies } from './entities/supplies.entity';
 import { Repository } from 'typeorm';
 import { RegisterSuppliesDto } from './dtos/register-supplies.dto';
 import { FilterSuppliesDto } from './dtos/filter-supplies.dto';
+import { UpdateSuppliesDto } from './dtos/update-supplies.dto';
 
 @Injectable()
 export class SuppliesService {
@@ -96,6 +97,31 @@ export class SuppliesService {
       }
 
       return supply;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async update(id: string, updateSuppliesDto: UpdateSuppliesDto) {
+    try {
+      const supply = await this.suppliesRepository.preload({
+        id,
+        ...updateSuppliesDto,
+      });
+
+      if (!supply) {
+        throw new NotFoundException(
+          `Custo com insumo de id ${id} não encontrado`,
+        );
+      }
+
+      return await this.suppliesRepository.save(supply);
     } catch (error) {
       this.logger.error(error.message);
 
