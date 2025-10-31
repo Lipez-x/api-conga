@@ -16,6 +16,7 @@ import { UtilityCost } from './utility-cost/entities/utility-cost.entity';
 import { SuppliesModule } from './supplies/supplies.module';
 import { Supplies } from './supplies/entities/supplies.entity';
 import { OperationalCostModule } from './operational-cost/operational-cost.module';
+import { OperationalCost } from './operational-cost/entities/operational-cost.entity';
 
 @Module({
   imports: [
@@ -29,7 +30,14 @@ import { OperationalCostModule } from './operational-cost/operational-cost.modul
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, LoginAttempt, PersonnelCost, UtilityCost, Supplies],
+      entities: [
+        User,
+        LoginAttempt,
+        PersonnelCost,
+        UtilityCost,
+        Supplies,
+        OperationalCost,
+      ],
       synchronize: false,
     }),
     UsersModule,
