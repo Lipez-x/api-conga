@@ -15,6 +15,7 @@ import { UtilityCostModule } from './utility-cost/utility-cost.module';
 import { UtilityCost } from './utility-cost/entities/utility-cost.entity';
 import { SuppliesModule } from './supplies/supplies.module';
 import { Supplies } from './supplies/entities/supplies.entity';
+import { OperationalCostModule } from './operational-cost/operational-cost.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { Supplies } from './supplies/entities/supplies.entity';
     PersonnelCostModule,
     UtilityCostModule,
     SuppliesModule,
+    OperationalCostModule,
   ],
   controllers: [AppController],
   providers: [
