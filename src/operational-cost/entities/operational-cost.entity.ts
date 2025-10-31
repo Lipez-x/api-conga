@@ -13,7 +13,7 @@ export class OperationalCost {
   date: Date;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: false })
-  value: number;
+  value: string;
 
   @Column({ type: 'text', nullable: true })
   description: string;
