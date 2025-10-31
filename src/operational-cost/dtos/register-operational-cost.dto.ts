@@ -3,7 +3,7 @@ import {
   IsDecimal,
   IsEnum,
   IsNotEmpty,
-  IsOptional,
+  IsString,
 } from 'class-validator';
 import { CostType } from '../enums/operational-cost.enum';
 
@@ -20,6 +20,7 @@ export class RegisterOperationalCostDto {
   @IsNotEmpty()
   value: string;
 
-  @IsOptional()
-  description?: string;
+  @IsString()
+  @IsNotEmpty()
+  description: string;
 }
