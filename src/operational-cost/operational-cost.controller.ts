@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -54,5 +55,10 @@ export class OperationalCostController {
       id,
       updateOperationalCostDto,
     );
+  }
+
+  @Delete(':id')
+  async delet(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.operationalCostService.delete(id);
   }
 }

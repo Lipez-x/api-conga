@@ -123,4 +123,31 @@ export class OperationalCostService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async delete(id: string) {
+    try {
+      const operationalCost = await this.operationalCostRepository.findOne({
+        where: { id },
+      });
+
+      if (!operationalCost) {
+        throw new NotFoundException(
+          `Custo com operacional de id ${id} não encontrado`,
+        );
+      }
+
+      await this.operationalCostRepository.delete(operationalCost);
+      return {
+        message: `Custo com operacional id(${id}) deletado com sucesso`,
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }
