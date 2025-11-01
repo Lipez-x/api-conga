@@ -9,6 +9,7 @@ import { OperationalCost } from './entities/operational-cost.entity';
 import { Repository } from 'typeorm';
 import { RegisterOperationalCostDto } from './dtos/register-operational-cost.dto';
 import { OperationalCostFilterDto } from './dtos/operational-cost-filter.dto';
+import { UpdateOperationalCostDto } from './dtos/update-operational-cost.dto';
 
 @Injectable()
 export class OperationalCostService {
@@ -87,6 +88,31 @@ export class OperationalCostService {
       }
 
       return operationalCost;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async update(id: string, updateOperationalCostDto: UpdateOperationalCostDto) {
+    const operationalCost = await this.operationalCostRepository.preload({
+      id,
+      ...updateOperationalCostDto,
+    });
+
+    if (!operationalCost) {
+      throw new NotFoundException(
+        `Custo com operacional de id ${id} não encontrado`,
+      );
+    }
+
+    try {
+      return await this.operationalCostRepository.save(operationalCost);
     } catch (error) {
       this.logger.error(error.message);
 
