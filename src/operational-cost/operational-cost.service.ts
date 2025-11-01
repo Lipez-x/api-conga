@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OperationalCost } from './entities/operational-cost.entity';
@@ -69,6 +70,30 @@ export class OperationalCostService {
       };
     } catch (error) {
       this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async findById(id: string) {
+    try {
+      const operationalCost = await this.operationalCostRepository.findOne({
+        where: { id },
+      });
+
+      if (!operationalCost) {
+        throw new NotFoundException(
+          `Custo com operacional de id ${id} não encontrado`,
+        );
+      }
+
+      return operationalCost;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(error.message);
     }
   }
