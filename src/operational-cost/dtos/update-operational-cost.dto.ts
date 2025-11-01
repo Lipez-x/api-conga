@@ -22,5 +22,5 @@ export class UpdateOperationalCostDto {
 
   @IsString()
   @IsOptional()
-  observations?: string;
+  description?: string;
 }
