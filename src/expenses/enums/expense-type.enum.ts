@@ -1,0 +1,6 @@
+export enum ExpenseType {
+  PERSONNEL = 'PERSONNEL',
+  UTILITY = 'UTILITY',
+  SUPPLIES = 'SUPPLIES',
+  OPERATIONAL = 'OPERATIONAL',
+}
