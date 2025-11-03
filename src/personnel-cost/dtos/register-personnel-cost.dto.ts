@@ -16,11 +16,11 @@ export class RegisterPersonnelCostDto {
 
   @IsDateString()
   @IsNotEmpty()
-  date: string;
+  date: Date;
 
   @IsDecimal({ decimal_digits: '2' })
   @IsNotEmpty()
-  value: string;
+  value: number;
 
   @IsString()
   @IsNotEmpty()

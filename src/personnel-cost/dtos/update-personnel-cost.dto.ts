@@ -14,11 +14,11 @@ export class UpdatePersonnelCostDto {
 
   @IsDateString()
   @IsOptional()
-  date: string;
+  date: Date;
 
   @IsDecimal({ decimal_digits: '2' })
   @IsOptional()
-  value: string;
+  value: number;
 
   @IsString()
   @IsOptional()
