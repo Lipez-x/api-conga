@@ -11,7 +11,6 @@ import { Repository } from 'typeorm';
 import { PersonnelCostFilterDto } from './dtos/personnel-cost-filter.dto';
 import { UpdatePersonnelCostDto } from './dtos/update-personnel-cost.dto';
 import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
-import { log } from 'console';
 
 @Injectable()
 export class PersonnelCostService {
@@ -106,7 +105,7 @@ export class PersonnelCostService {
         );
       }
 
-      const personnelCostFormatted = {
+      const formattedPersonnelCost = {
         id: personnelCost.id,
         type: personnelCost.type,
         date: personnelCost.expense.date,
@@ -114,7 +113,7 @@ export class PersonnelCostService {
         description: personnelCost.description,
       };
 
-      return personnelCostFormatted;
+      return formattedPersonnelCost;
     } catch (error) {
       this.logger.error(error.message);
 

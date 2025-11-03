@@ -20,6 +20,7 @@ import { UtilityCostFilterDto } from './dtos/utility-cost-filter.dto';
 import { UpdateUtilityCostDto } from './dtos/update-utility-cost.dto';
 
 @Roles(UserRole.ADMIN)
+@UsePipes(ValidationPipe)
 @Controller('utility-cost')
 export class UtilityCostController {
   constructor(private readonly utilityCostService: UtilityCostService) {}
@@ -31,7 +32,6 @@ export class UtilityCostController {
   }
 
   @Get()
-  @UsePipes(ValidationPipe)
   async findAll(@Query() filters: UtilityCostFilterDto) {
     return await this.utilityCostService.findAll(filters);
   }
@@ -42,7 +42,6 @@ export class UtilityCostController {
   }
 
   @Put(':id')
-  @UsePipes(ValidationPipe)
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateUtilityCostDto: UpdateUtilityCostDto,
