@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import { RegisterSuppliesDto } from './dtos/register-supplies.dto';
 import { FilterSuppliesDto } from './dtos/filter-supplies.dto';
 import { UpdateSuppliesDto } from './dtos/update-supplies.dto';
+import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
 
 @Injectable()
 export class SuppliesService {
@@ -22,6 +23,10 @@ export class SuppliesService {
   async register(registerSuppliesDto: RegisterSuppliesDto) {
     try {
       const supply = this.suppliesRepository.create({
+        expense: {
+          date: registerSuppliesDto.date,
+          category: ExpenseType.SUPPLIES,
+        },
         ...registerSuppliesDto,
       });
 
@@ -47,11 +52,14 @@ export class SuppliesService {
       limit = 10,
     } = filters;
 
-    const query = this.suppliesRepository.createQueryBuilder('supplies');
+    const query = this.suppliesRepository
+      .createQueryBuilder('supplies')
+      .leftJoinAndSelect('supplies.expense', 'expense');
+
     if (name)
       query.andWhere('supplies.name ILIKE :name', { name: `%${name}%` });
-    if (dateFrom) query.andWhere('supplies.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('supplies.date <= :dateTo', { dateTo });
+    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
     if (minQuantity)
       query.andWhere('supplies.quantity >= :minQuantity', { minQuantity });
     if (maxQuantity)
@@ -60,10 +68,8 @@ export class SuppliesService {
       query.andWhere('supplies.unit_price >= :minUnitPrice', { minUnitPrice });
     if (maxUnitPrice)
       query.andWhere('supplies.unit_price <= :maxUnitPrice', { maxUnitPrice });
-    if (minTotal)
-      query.andWhere('supplies.total_cost >= :minTotal', { minTotal });
-    if (maxTotal)
-      query.andWhere('supplies.total_cost <= :maxTotal', { maxTotal });
+    if (minTotal) query.andWhere('expense.value >= :minTotal', { minTotal });
+    if (maxTotal) query.andWhere('expense.value <= :maxTotal', { maxTotal });
 
     try {
       const [data, total] = await query
@@ -71,12 +77,21 @@ export class SuppliesService {
         .take(limit)
         .getManyAndCount();
 
+      const formattedData = data.map((item) => ({
+        id: item.id,
+        name: item.name,
+        date: item.expense.date,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        value: item.expense.value,
+      }));
+
       return {
         total,
         page,
         limit,
         totalPages: Math.ceil(total / limit),
-        data,
+        formattedData,
       };
     } catch (error) {
       this.logger.error(error.message);
@@ -88,6 +103,7 @@ export class SuppliesService {
     try {
       const supply = await this.suppliesRepository.findOne({
         where: { id },
+        relations: ['expense'],
       });
 
       if (!supply) {
@@ -96,7 +112,16 @@ export class SuppliesService {
         );
       }
 
-      return supply;
+      const formattedSupply = {
+        id: supply.id,
+        name: supply.name,
+        date: supply.expense.date,
+        quantity: supply.quantity,
+        unitPrice: supply.unitPrice,
+        value: supply.expense.value,
+      };
+
+      return formattedSupply;
     } catch (error) {
       this.logger.error(error.message);
 
@@ -110,15 +135,22 @@ export class SuppliesService {
 
   async update(id: string, updateSuppliesDto: UpdateSuppliesDto) {
     try {
-      const supply = await this.suppliesRepository.preload({
-        id,
-        ...updateSuppliesDto,
+      const supply = await this.suppliesRepository.findOne({
+        where: { id },
+        relations: ['expense'],
       });
 
       if (!supply) {
         throw new NotFoundException(
           `Custo com insumo de id ${id} não encontrado`,
         );
+      }
+
+      Object.assign(supply, updateSuppliesDto);
+      if (updateSuppliesDto.date) {
+        Object.assign(supply.expense, {
+          date: updateSuppliesDto.date,
+        });
       }
 
       return await this.suppliesRepository.save(supply);
