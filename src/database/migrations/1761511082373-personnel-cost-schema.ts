@@ -14,5 +14,6 @@ export class PersonnelCostSchema1761511082373 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP TABLE "personnel_cost"`);
+    await queryRunner.query(`DROP TYPE "public"."personnel_cost_type_enum"`);
   }
 }
