@@ -21,6 +21,7 @@ export class RegisterPersonnelCostDto {
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
+  @IsNotEmpty()
   value: number;
 
   @IsString()
