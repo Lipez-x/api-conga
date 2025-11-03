@@ -19,6 +19,7 @@ import { PersonnelCostFilterDto } from './dtos/personnel-cost-filter.dto';
 import { UpdatePersonnelCostDto } from './dtos/update-personnel-cost.dto';
 
 @Roles(UserRole.ADMIN)
+@UsePipes(ValidationPipe)
 @Controller('personnel-cost')
 export class PersonnelCostController {
   constructor(private readonly personnelCostService: PersonnelCostService) {}
@@ -29,7 +30,6 @@ export class PersonnelCostController {
   }
 
   @Get()
-  @UsePipes(ValidationPipe)
   async findAll(@Query() filters: PersonnelCostFilterDto) {
     return await this.personnelCostService.findAll(filters);
   }
