@@ -153,7 +153,10 @@ export class SuppliesService {
         });
       }
 
-      return await this.suppliesRepository.save(supply);
+      await this.suppliesRepository.save(supply);
+      return {
+        message: `Custo com insumo id(${id}) atualizado com sucesso`,
+      };
     } catch (error) {
       this.logger.error(error.message);
 
