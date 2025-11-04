@@ -14,7 +14,11 @@ export class Supplies {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToOne(() => Expense, { cascade: true, nullable: false })
+  @OneToOne(() => Expense, {
+    cascade: true,
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   @JoinColumn()
   expense: Expense;
 
