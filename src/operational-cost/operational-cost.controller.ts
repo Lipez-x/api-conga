@@ -41,7 +41,7 @@ export class OperationalCostController {
     return await this.operationalCostService.findAll(filters);
   }
 
-  @Get('id')
+  @Get(':id')
   async findById(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.operationalCostService.findById(id);
   }
