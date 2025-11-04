@@ -10,6 +10,8 @@ import { PersonnelCost } from './entities/personnel-cost.entity';
 import { Repository } from 'typeorm';
 import { PersonnelCostFilterDto } from './dtos/personnel-cost-filter.dto';
 import { UpdatePersonnelCostDto } from './dtos/update-personnel-cost.dto';
+import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
+import { ExpensesService } from 'src/expenses/expenses.service';
 
 @Injectable()
 export class PersonnelCostService {
@@ -18,11 +20,17 @@ export class PersonnelCostService {
   constructor(
     @InjectRepository(PersonnelCost)
     private readonly personnelCostRepository: Repository<PersonnelCost>,
+    private readonly expensesService: ExpensesService,
   ) {}
 
   async register(registerPersonnelCostDto: RegisterPersonnelCostDto) {
     try {
       const personnelCost = this.personnelCostRepository.create({
+        expense: {
+          date: registerPersonnelCostDto.date,
+          value: registerPersonnelCostDto.value,
+          category: ExpenseType.PERSONNEL,
+        },
         ...registerPersonnelCostDto,
       });
 
@@ -45,23 +53,33 @@ export class PersonnelCostService {
       limit = 10,
     } = filters;
 
-    const query = this.personnelCostRepository.createQueryBuilder('cost');
+    const query = this.personnelCostRepository
+      .createQueryBuilder('cost')
+      .leftJoinAndSelect('cost.expense', 'expense');
 
     if (type) query.andWhere('cost.type = :type', { type });
-    if (dateFrom) query.andWhere('cost.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('cost.date <= :dateTo', { dateTo });
-    if (minValue) query.andWhere('cost.value >= :minValue', { minValue });
-    if (maxValue) query.andWhere('cost.value <= :maxValue', { maxValue });
+    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
+    if (minValue) query.andWhere('expense.value >= :minValue', { minValue });
+    if (maxValue) query.andWhere('expense.value <= :maxValue', { maxValue });
     if (description)
       query.andWhere('cost.description ILIKE :description', {
         description: `%${description}%`,
       });
 
     try {
-      const [data, total] = await query
+      const [rows, total] = await query
         .skip((page - 1) * limit)
         .take(limit)
         .getManyAndCount();
+
+      const data = rows.map((item) => ({
+        id: item.id,
+        type: item.type,
+        date: item.expense.date,
+        value: item.expense.value,
+        description: item.description,
+      }));
 
       return {
         total,
@@ -80,6 +98,7 @@ export class PersonnelCostService {
     try {
       const personnelCost = await this.personnelCostRepository.findOne({
         where: { id },
+        relations: ['expense'],
       });
 
       if (!personnelCost) {
@@ -88,7 +107,15 @@ export class PersonnelCostService {
         );
       }
 
-      return personnelCost;
+      const formattedPersonnelCost = {
+        id: personnelCost.id,
+        type: personnelCost.type,
+        date: personnelCost.expense.date,
+        value: personnelCost.expense.value,
+        description: personnelCost.description,
+      };
+
+      return formattedPersonnelCost;
     } catch (error) {
       this.logger.error(error.message);
 
@@ -102,9 +129,9 @@ export class PersonnelCostService {
 
   async update(id: string, updatePersonnelCostDto: UpdatePersonnelCostDto) {
     try {
-      const personnelCost = await this.personnelCostRepository.preload({
-        id,
-        ...updatePersonnelCostDto,
+      const personnelCost = await this.personnelCostRepository.findOne({
+        where: { id },
+        relations: ['expense'],
       });
 
       if (!personnelCost) {
@@ -113,7 +140,18 @@ export class PersonnelCostService {
         );
       }
 
-      return await this.personnelCostRepository.save(personnelCost);
+      Object.assign(personnelCost, updatePersonnelCostDto);
+      if (updatePersonnelCostDto.date || updatePersonnelCostDto.value) {
+        Object.assign(personnelCost.expense, {
+          date: updatePersonnelCostDto.date,
+          value: updatePersonnelCostDto.value,
+        });
+      }
+
+      await this.personnelCostRepository.save(personnelCost);
+      return {
+        message: `Custo com pessoal id(${id}) atualizado com sucesso`,
+      };
     } catch (error) {
       this.logger.error(error.message);
 
@@ -129,6 +167,7 @@ export class PersonnelCostService {
     try {
       const personnelCost = await this.personnelCostRepository.findOne({
         where: { id },
+        relations: ['expense'],
       });
 
       if (!personnelCost) {
@@ -137,7 +176,7 @@ export class PersonnelCostService {
         );
       }
 
-      await this.personnelCostRepository.delete(personnelCost);
+      await this.expensesService.delete(personnelCost.expense.id);
       return { message: `Custo com pessoal id(${id}) deletado com sucesso` };
     } catch (error) {
       this.logger.error(error.message);

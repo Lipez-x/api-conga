@@ -1,11 +1,13 @@
 import {
   IsDateString,
-  IsDecimal,
   IsEnum,
+  IsNumber,
   IsOptional,
   IsString,
+  Min,
 } from 'class-validator';
 import { CostType } from '../enums/cost-type.enum';
+import { Type } from 'class-transformer';
 
 export class UpdatePersonnelCostDto {
   @IsEnum(CostType)
@@ -14,11 +16,13 @@ export class UpdatePersonnelCostDto {
 
   @IsDateString()
   @IsOptional()
-  date: string;
+  date: Date;
 
-  @IsDecimal({ decimal_digits: '2' })
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
   @IsOptional()
-  value: string;
+  value: number;
 
   @IsString()
   @IsOptional()

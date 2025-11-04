@@ -3,9 +3,12 @@ import {
   IsDecimal,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsString,
+  Min,
 } from 'class-validator';
 import { CostType } from '../enums/cost-type.enum';
+import { Type } from 'class-transformer';
 
 export class RegisterUtilityCostDto {
   @IsEnum(CostType)
@@ -14,11 +17,13 @@ export class RegisterUtilityCostDto {
 
   @IsDateString()
   @IsNotEmpty()
-  date: string;
+  date: Date;
 
-  @IsDecimal({ decimal_digits: '2' })
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
   @IsNotEmpty()
-  value: string;
+  value: number;
 
   @IsString()
   @IsNotEmpty()

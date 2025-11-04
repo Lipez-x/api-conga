@@ -10,6 +10,8 @@ import { Repository } from 'typeorm';
 import { RegisterOperationalCostDto } from './dtos/register-operational-cost.dto';
 import { OperationalCostFilterDto } from './dtos/operational-cost-filter.dto';
 import { UpdateOperationalCostDto } from './dtos/update-operational-cost.dto';
+import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
+import { ExpensesService } from 'src/expenses/expenses.service';
 
 @Injectable()
 export class OperationalCostService {
@@ -17,11 +19,17 @@ export class OperationalCostService {
   constructor(
     @InjectRepository(OperationalCost)
     private readonly operationalCostRepository: Repository<OperationalCost>,
+    private readonly expensesService: ExpensesService,
   ) {}
 
   async register(registerOperationalCostDto: RegisterOperationalCostDto) {
     try {
       const operationalCost = this.operationalCostRepository.create({
+        expense: {
+          date: registerOperationalCostDto.date,
+          value: registerOperationalCostDto.value,
+          category: ExpenseType.OPERATIONAL,
+        },
         ...registerOperationalCostDto,
       });
 
@@ -44,23 +52,33 @@ export class OperationalCostService {
       limit = 10,
     } = filters;
 
-    const query = this.operationalCostRepository.createQueryBuilder('cost');
+    const query = this.operationalCostRepository
+      .createQueryBuilder('cost')
+      .leftJoinAndSelect('cost.expense', 'expense');
 
     if (type) query.andWhere('cost.type = :type', { type });
-    if (dateFrom) query.andWhere('cost.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('cost.date <= :dateTo', { dateTo });
-    if (minValue) query.andWhere('cost.value >= :minValue', { minValue });
-    if (maxValue) query.andWhere('cost.value <= :maxValue', { maxValue });
+    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
+    if (minValue) query.andWhere('expense.value >= :minValue', { minValue });
+    if (maxValue) query.andWhere('expense.value <= :maxValue', { maxValue });
     if (description)
       query.andWhere('cost.description ILIKE :description', {
         description: `%${description}%`,
       });
 
     try {
-      const [data, total] = await query
+      const [rows, total] = await query
         .skip((page - 1) * limit)
         .take(limit)
         .getManyAndCount();
+
+      const data = rows.map((item) => ({
+        id: item.id,
+        type: item.type,
+        date: item.expense.date,
+        value: item.expense.value,
+        description: item.description,
+      }));
 
       return {
         total,
@@ -79,6 +97,7 @@ export class OperationalCostService {
     try {
       const operationalCost = await this.operationalCostRepository.findOne({
         where: { id },
+        relations: ['expense'],
       });
 
       if (!operationalCost) {
@@ -87,7 +106,15 @@ export class OperationalCostService {
         );
       }
 
-      return operationalCost;
+      const formattedOperationalCost = {
+        id: operationalCost.id,
+        type: operationalCost.type,
+        date: operationalCost.expense.date,
+        value: operationalCost.expense.value,
+        description: operationalCost.description,
+      };
+
+      return formattedOperationalCost;
     } catch (error) {
       this.logger.error(error.message);
 
@@ -100,19 +127,30 @@ export class OperationalCostService {
   }
 
   async update(id: string, updateOperationalCostDto: UpdateOperationalCostDto) {
-    const operationalCost = await this.operationalCostRepository.preload({
-      id,
-      ...updateOperationalCostDto,
-    });
-
-    if (!operationalCost) {
-      throw new NotFoundException(
-        `Custo com operacional de id ${id} não encontrado`,
-      );
-    }
-
     try {
-      return await this.operationalCostRepository.save(operationalCost);
+      const operationalCost = await this.operationalCostRepository.findOne({
+        where: { id },
+        relations: ['expense'],
+      });
+
+      if (!operationalCost) {
+        throw new NotFoundException(
+          `Custo com operacional de id ${id} não encontrado`,
+        );
+      }
+
+      Object.assign(operationalCost, updateOperationalCostDto);
+      if (updateOperationalCostDto.date || updateOperationalCostDto.value) {
+        Object.assign(operationalCost.expense, {
+          date: updateOperationalCostDto.date,
+          value: updateOperationalCostDto.value,
+        });
+      }
+
+      await this.operationalCostRepository.save(operationalCost);
+      return {
+        message: `Custo com operacional id(${id}) atualizado com sucesso`,
+      };
     } catch (error) {
       this.logger.error(error.message);
 
@@ -128,6 +166,7 @@ export class OperationalCostService {
     try {
       const operationalCost = await this.operationalCostRepository.findOne({
         where: { id },
+        relations: ['expense'],
       });
 
       if (!operationalCost) {
@@ -136,7 +175,7 @@ export class OperationalCostService {
         );
       }
 
-      await this.operationalCostRepository.delete(operationalCost);
+      await this.expensesService.delete(operationalCost.expense.id);
       return {
         message: `Custo com operacional id(${id}) deletado com sucesso`,
       };

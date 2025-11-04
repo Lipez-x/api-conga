@@ -10,6 +10,8 @@ import { UtilityCost } from './entities/utility-cost.entity';
 import { Repository } from 'typeorm';
 import { UtilityCostFilterDto } from './dtos/utility-cost-filter.dto';
 import { UpdateUtilityCostDto } from './dtos/update-utility-cost.dto';
+import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
+import { ExpensesService } from 'src/expenses/expenses.service';
 
 @Injectable()
 export class UtilityCostService {
@@ -17,11 +19,17 @@ export class UtilityCostService {
   constructor(
     @InjectRepository(UtilityCost)
     private readonly utilityCostRepository: Repository<UtilityCost>,
+    private readonly expensesService: ExpensesService,
   ) {}
 
   async register(registerUtilityCostDto: RegisterUtilityCostDto) {
     try {
       const utilityCost = this.utilityCostRepository.create({
+        expense: {
+          date: registerUtilityCostDto.date,
+          value: registerUtilityCostDto.value,
+          category: ExpenseType.UTILITY,
+        },
         ...registerUtilityCostDto,
       });
 
@@ -44,23 +52,33 @@ export class UtilityCostService {
       limit = 10,
     } = filters;
 
-    const query = this.utilityCostRepository.createQueryBuilder('cost');
+    const query = this.utilityCostRepository
+      .createQueryBuilder('cost')
+      .leftJoinAndSelect('cost.expense', 'expense');
 
     if (type) query.andWhere('cost.type = :type', { type });
-    if (dateFrom) query.andWhere('cost.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('cost.date <= :dateTo', { dateTo });
-    if (minValue) query.andWhere('cost.value >= :minValue', { minValue });
-    if (maxValue) query.andWhere('cost.value <= :maxValue', { maxValue });
+    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
+    if (minValue) query.andWhere('expense.value >= :minValue', { minValue });
+    if (maxValue) query.andWhere('expense.value <= :maxValue', { maxValue });
     if (observations)
-      query.andWhere('cost.observations ILIKE :description', {
-        description: `%${observations}%`,
+      query.andWhere('cost.observations ILIKE :observations', {
+        observations: `%${observations}%`,
       });
 
     try {
-      const [data, total] = await query
+      const [rows, total] = await query
         .skip((page - 1) * limit)
         .take(limit)
         .getManyAndCount();
+
+      const data = rows.map((item) => ({
+        id: item.id,
+        type: item.type,
+        date: item.expense.date,
+        value: item.expense.value,
+        observations: item.observations,
+      }));
 
       return {
         total,
@@ -79,6 +97,7 @@ export class UtilityCostService {
     try {
       const utilityCost = await this.utilityCostRepository.findOne({
         where: { id },
+        relations: ['expense'],
       });
 
       if (!utilityCost) {
@@ -87,7 +106,15 @@ export class UtilityCostService {
         );
       }
 
-      return utilityCost;
+      const formattedUtilityCost = {
+        id: utilityCost.id,
+        type: utilityCost.type,
+        date: utilityCost.expense.date,
+        value: utilityCost.expense.value,
+        observations: utilityCost.observations,
+      };
+
+      return formattedUtilityCost;
     } catch (error) {
       this.logger.error(error.message);
 
@@ -101,9 +128,9 @@ export class UtilityCostService {
 
   async update(id: string, updateUtilityCostDto: UpdateUtilityCostDto) {
     try {
-      const utilityCost = await this.utilityCostRepository.preload({
-        id,
-        ...updateUtilityCostDto,
+      const utilityCost = await this.utilityCostRepository.findOne({
+        where: { id },
+        relations: ['expense'],
       });
 
       if (!utilityCost) {
@@ -112,7 +139,18 @@ export class UtilityCostService {
         );
       }
 
-      return await this.utilityCostRepository.save(utilityCost);
+      Object.assign(utilityCost, updateUtilityCostDto);
+      if (updateUtilityCostDto.date || updateUtilityCostDto.value) {
+        Object.assign(utilityCost.expense, {
+          date: updateUtilityCostDto.date,
+          value: updateUtilityCostDto.value,
+        });
+      }
+
+      await this.utilityCostRepository.save(utilityCost);
+      return {
+        message: `Custo com utilidade id(${id}) atualizado com sucesso`,
+      };
     } catch (error) {
       this.logger.error(error.message);
 
@@ -128,6 +166,7 @@ export class UtilityCostService {
     try {
       const utilityCost = await this.utilityCostRepository.findOne({
         where: { id },
+        relations: ['expense'],
       });
 
       if (!utilityCost) {
@@ -136,7 +175,7 @@ export class UtilityCostService {
         );
       }
 
-      await this.utilityCostRepository.delete(utilityCost);
+      await this.expensesService.delete(utilityCost.expense.id);
       return { message: `Custo com utilidade id(${id}) deletado com sucesso` };
     } catch (error) {
       this.logger.error(error.message);
