@@ -66,12 +66,12 @@ export class PersonnelCostService {
       });
 
     try {
-      const [data, total] = await query
+      const [rows, total] = await query
         .skip((page - 1) * limit)
         .take(limit)
         .getManyAndCount();
 
-      const formattedData = data.map((item) => ({
+      const data = rows.map((item) => ({
         id: item.id,
         type: item.type,
         date: item.expense.date,
@@ -84,7 +84,7 @@ export class PersonnelCostService {
         page,
         limit,
         totalPages: Math.ceil(total / limit),
-        formattedData,
+        data,
       };
     } catch (error) {
       this.logger.error(error.message);

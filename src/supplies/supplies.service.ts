@@ -72,18 +72,18 @@ export class SuppliesService {
     if (maxTotal) query.andWhere('expense.value <= :maxTotal', { maxTotal });
 
     try {
-      const [data, total] = await query
+      const [rows, total] = await query
         .skip((page - 1) * limit)
         .take(limit)
         .getManyAndCount();
 
-      const formattedData = data.map((item) => ({
+      const data = rows.map((item) => ({
         id: item.id,
         name: item.name,
         date: item.expense.date,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
-        value: item.expense.value,
+        totalCost: item.expense.value,
       }));
 
       return {
@@ -91,7 +91,7 @@ export class SuppliesService {
         page,
         limit,
         totalPages: Math.ceil(total / limit),
-        formattedData,
+        data,
       };
     } catch (error) {
       this.logger.error(error.message);
@@ -118,7 +118,7 @@ export class SuppliesService {
         date: supply.expense.date,
         quantity: supply.quantity,
         unitPrice: supply.unitPrice,
-        value: supply.expense.value,
+        totalCost: supply.expense.value,
       };
 
       return formattedSupply;
