@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { UtilityCostFilterDto } from './dtos/utility-cost-filter.dto';
 import { UpdateUtilityCostDto } from './dtos/update-utility-cost.dto';
 import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
+import { ExpensesService } from 'src/expenses/expenses.service';
 
 @Injectable()
 export class UtilityCostService {
@@ -18,6 +19,7 @@ export class UtilityCostService {
   constructor(
     @InjectRepository(UtilityCost)
     private readonly utilityCostRepository: Repository<UtilityCost>,
+    private readonly expensesService: ExpensesService,
   ) {}
 
   async register(registerUtilityCostDto: RegisterUtilityCostDto) {
@@ -173,7 +175,7 @@ export class UtilityCostService {
         );
       }
 
-      await this.utilityCostRepository.delete(id);
+      await this.expensesService.delete(utilityCost.expense.id);
       return { message: `Custo com utilidade id(${id}) deletado com sucesso` };
     } catch (error) {
       this.logger.error(error.message);

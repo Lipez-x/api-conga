@@ -11,6 +11,7 @@ import { RegisterOperationalCostDto } from './dtos/register-operational-cost.dto
 import { OperationalCostFilterDto } from './dtos/operational-cost-filter.dto';
 import { UpdateOperationalCostDto } from './dtos/update-operational-cost.dto';
 import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
+import { ExpensesService } from 'src/expenses/expenses.service';
 
 @Injectable()
 export class OperationalCostService {
@@ -18,6 +19,7 @@ export class OperationalCostService {
   constructor(
     @InjectRepository(OperationalCost)
     private readonly operationalCostRepository: Repository<OperationalCost>,
+    private readonly expensesService: ExpensesService,
   ) {}
 
   async register(registerOperationalCostDto: RegisterOperationalCostDto) {
@@ -164,6 +166,7 @@ export class OperationalCostService {
     try {
       const operationalCost = await this.operationalCostRepository.findOne({
         where: { id },
+        relations: ['expense'],
       });
 
       if (!operationalCost) {
@@ -172,7 +175,7 @@ export class OperationalCostService {
         );
       }
 
-      await this.operationalCostRepository.delete(id);
+      await this.expensesService.delete(operationalCost.expense.id);
       return {
         message: `Custo com operacional id(${id}) deletado com sucesso`,
       };

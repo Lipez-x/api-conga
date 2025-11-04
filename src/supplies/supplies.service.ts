@@ -11,6 +11,7 @@ import { RegisterSuppliesDto } from './dtos/register-supplies.dto';
 import { FilterSuppliesDto } from './dtos/filter-supplies.dto';
 import { UpdateSuppliesDto } from './dtos/update-supplies.dto';
 import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
+import { ExpensesService } from 'src/expenses/expenses.service';
 
 @Injectable()
 export class SuppliesService {
@@ -18,6 +19,7 @@ export class SuppliesService {
   constructor(
     @InjectRepository(Supplies)
     private readonly suppliesRepository: Repository<Supplies>,
+    private readonly expensesService: ExpensesService,
   ) {}
 
   async register(registerSuppliesDto: RegisterSuppliesDto) {
@@ -172,6 +174,7 @@ export class SuppliesService {
     try {
       const supply = await this.suppliesRepository.findOne({
         where: { id },
+        relations: ['expense'],
       });
 
       if (!supply) {
@@ -180,7 +183,7 @@ export class SuppliesService {
         );
       }
 
-      await this.suppliesRepository.delete(id);
+      await this.expensesService.delete(supply.expense.id);
       return { message: `Custo com insumo id(${id}) deletado com sucesso` };
     } catch (error) {
       this.logger.error(error.message);

@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { PersonnelCostFilterDto } from './dtos/personnel-cost-filter.dto';
 import { UpdatePersonnelCostDto } from './dtos/update-personnel-cost.dto';
 import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
+import { ExpensesService } from 'src/expenses/expenses.service';
 
 @Injectable()
 export class PersonnelCostService {
@@ -19,6 +20,7 @@ export class PersonnelCostService {
   constructor(
     @InjectRepository(PersonnelCost)
     private readonly personnelCostRepository: Repository<PersonnelCost>,
+    private readonly expensesService: ExpensesService,
   ) {}
 
   async register(registerPersonnelCostDto: RegisterPersonnelCostDto) {
@@ -165,6 +167,7 @@ export class PersonnelCostService {
     try {
       const personnelCost = await this.personnelCostRepository.findOne({
         where: { id },
+        relations: ['expense'],
       });
 
       if (!personnelCost) {
@@ -173,7 +176,7 @@ export class PersonnelCostService {
         );
       }
 
-      await this.personnelCostRepository.delete(id);
+      await this.expensesService.delete(personnelCost.expense.id);
       return { message: `Custo com pessoal id(${id}) deletado com sucesso` };
     } catch (error) {
       this.logger.error(error.message);
