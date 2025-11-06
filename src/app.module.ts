@@ -21,6 +21,7 @@ import { ExpensesModule } from './expenses/expenses.module';
 import { Expense } from './expenses/entities/expense.entity';
 import { ProductionModule } from './production/production.module';
 import { Production } from './production/entities/production.entity';
+import { SalePriceModule } from './sale-price/sale-price.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { Production } from './production/entities/production.entity';
     OperationalCostModule,
     ExpensesModule,
     ProductionModule,
+    SalePriceModule,
   ],
   controllers: [AppController],
   providers: [
