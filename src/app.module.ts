@@ -22,6 +22,7 @@ import { Expense } from './expenses/entities/expense.entity';
 import { ProductionModule } from './production/production.module';
 import { Production } from './production/entities/production.entity';
 import { SalePriceModule } from './sale-price/sale-price.module';
+import { SalePrice } from './sale-price/entities/sale-price-entity';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { SalePriceModule } from './sale-price/sale-price.module';
         OperationalCost,
         Expense,
         Production,
+        SalePrice,
       ],
       synchronize: false,
     }),
