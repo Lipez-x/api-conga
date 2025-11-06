@@ -11,6 +11,9 @@ export class Production {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ name: 'producer_name', type: 'text' })
+  producerName: string;
+
   @Column({ type: 'date' })
   date: Date;
 
