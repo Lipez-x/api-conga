@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { SalePrice } from './entities/sale-price-entity';
 import { NewSalePriceDto } from './dtos/new-sale-price.dto';
 
@@ -47,6 +47,27 @@ export class SalePriceService {
       return {
         message: `Novo preço do leite definido: R$ ${salePrice.value.toFixed(2)} L, vigente a partir de ${date} às ${time}`,
       };
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async getByDate(date: Date) {
+    try {
+      const salePrice = await this.salePriceRepository.findOne({
+        where: {
+          startDate: LessThanOrEqual(date),
+          endDate: MoreThanOrEqual(date),
+        },
+      });
+
+      return salePrice;
     } catch (error) {
       this.logger.error(error.message);
 

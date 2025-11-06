@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   UsePipes,
   ValidationPipe,
@@ -19,5 +20,10 @@ export class SalePriceController {
   @UsePipes(ValidationPipe)
   async save(@Body() newSalePriceDto: NewSalePriceDto) {
     return await this.salePriceService.save(newSalePriceDto);
+  }
+
+  @Get('/current')
+  async getCurrent() {
+    return await this.salePriceService.getByDate(new Date());
   }
 }
