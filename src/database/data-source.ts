@@ -8,6 +8,7 @@ import { UtilityCost } from 'src/utility-cost/entities/utility-cost.entity';
 import { Supplies } from 'src/supplies/entities/supplies.entity';
 import { OperationalCost } from 'src/operational-cost/entities/operational-cost.entity';
 import { Expense } from 'src/expenses/entities/expense.entity';
+import { Production } from 'src/production/entities/production.entity';
 dotenv.config();
 
 export const AppDataSource = new DataSource({
@@ -25,6 +26,7 @@ export const AppDataSource = new DataSource({
     Supplies,
     OperationalCost,
     Expense,
+    Production,
   ],
   migrations: ['src/database/migrations/*.ts'],
 });
