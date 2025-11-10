@@ -6,7 +6,7 @@ import {
 import { RegisterLocalProductionDto } from './dtos/register-local-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LocalProduction } from './entities/local-production.entity';
-import { Filter, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { FilterLocalProductionDto } from './dtos/filter-local-production.dtos';
 
 @Injectable()
