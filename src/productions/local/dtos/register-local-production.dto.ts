@@ -3,11 +3,10 @@ import {
   IsDateString,
   IsNotEmpty,
   IsNumber,
-  IsString,
   Min,
 } from 'class-validator';
 
-export class RegisterProductionDto {
+export class RegisterLocalProductionDto {
   @IsDateString()
   @IsNotEmpty()
   date: Date;

@@ -3,25 +3,25 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { RegisterProductionDto } from './dtos/register-production.dto';
+import { RegisterLocalProductionDto } from './dtos/register-local-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LocalProduction } from './entities/local-production.entity';
-import { Repository } from 'typeorm';
-import { FilterProductionDto } from './dtos/filter-production.dtos';
+import { Filter, Repository } from 'typeorm';
+import { FilterLocalProductionDto } from './dtos/filter-local-production.dtos';
 
 @Injectable()
-export class ProductionService {
-  private logger = new Logger(ProductionService.name);
+export class LocalProductionService {
+  private logger = new Logger(LocalProduction.name);
 
   constructor(
     @InjectRepository(LocalProduction)
     private readonly productionRepository: Repository<LocalProduction>,
   ) {}
 
-  async register(registerProductionDto: RegisterProductionDto) {
+  async register(registerLocalProductionDto: RegisterLocalProductionDto) {
     try {
       const production = this.productionRepository.create({
-        ...registerProductionDto,
+        ...registerLocalProductionDto,
       });
 
       return await this.productionRepository.save(production);
@@ -31,7 +31,7 @@ export class ProductionService {
     }
   }
 
-  async findAll(filters: FilterProductionDto) {
+  async findAll(filters: FilterLocalProductionDto) {
     const {
       dateFrom,
       dateTo,

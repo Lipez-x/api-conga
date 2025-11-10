@@ -8,7 +8,7 @@ import { UtilityCost } from 'src/utility-cost/entities/utility-cost.entity';
 import { Supplies } from 'src/supplies/entities/supplies.entity';
 import { OperationalCost } from 'src/operational-cost/entities/operational-cost.entity';
 import { Expense } from 'src/expenses/entities/expense.entity';
-import { LocalProduction } from 'src/production/entities/local-production.entity';
+import { LocalProduction } from 'src/productions/local/entities/local-production.entity';
 import { SalePrice } from 'src/sale-price/entities/sale-price-entity';
 dotenv.config();
 

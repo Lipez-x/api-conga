@@ -3,11 +3,10 @@ import {
   IsDateString,
   IsOptional,
   IsNumber,
-  IsString,
   Min,
 } from 'class-validator';
 
-export class FilterProductionDto {
+export class FilterLocalProductionDto {
   @IsDateString()
   @IsOptional()
   dateFrom?: Date;

@@ -19,10 +19,10 @@ import { OperationalCostModule } from './operational-cost/operational-cost.modul
 import { OperationalCost } from './operational-cost/entities/operational-cost.entity';
 import { ExpensesModule } from './expenses/expenses.module';
 import { Expense } from './expenses/entities/expense.entity';
-import { ProductionModule } from './production/production.module';
-import { Production } from './production/entities/local-production.entity';
 import { SalePriceModule } from './sale-price/sale-price.module';
 import { SalePrice } from './sale-price/entities/sale-price-entity';
+import { LocalProduction } from './productions/local/entities/local-production.entity';
+import { ProductionsModule } from './productions/productions.module';
 
 @Module({
   imports: [
@@ -44,7 +44,7 @@ import { SalePrice } from './sale-price/entities/sale-price-entity';
         Supplies,
         OperationalCost,
         Expense,
-        Production,
+        LocalProduction,
         SalePrice,
       ],
       synchronize: false,
@@ -56,7 +56,7 @@ import { SalePrice } from './sale-price/entities/sale-price-entity';
     SuppliesModule,
     OperationalCostModule,
     ExpensesModule,
-    ProductionModule,
+    ProductionsModule,
     SalePriceModule,
   ],
   controllers: [AppController],
