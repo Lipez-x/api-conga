@@ -15,16 +15,16 @@ export class LocalProductionService {
 
   constructor(
     @InjectRepository(LocalProduction)
-    private readonly productionRepository: Repository<LocalProduction>,
+    private readonly localProductionRepository: Repository<LocalProduction>,
   ) {}
 
   async register(registerLocalProductionDto: RegisterLocalProductionDto) {
     try {
-      const production = this.productionRepository.create({
+      const production = this.localProductionRepository.create({
         ...registerLocalProductionDto,
       });
 
-      return await this.productionRepository.save(production);
+      return await this.localProductionRepository.save(production);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -45,7 +45,8 @@ export class LocalProductionService {
       limit = 10,
     } = filters;
 
-    const query = this.productionRepository.createQueryBuilder('production');
+    const query =
+      this.localProductionRepository.createQueryBuilder('production');
 
     if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
     if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
