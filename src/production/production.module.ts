@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ProductionService } from './production.service';
 import { ProductionController } from './production.controller';
-import { Production } from './entities/production.entity';
+import { LocalProduction } from './entities/local-production.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Production])],
+  imports: [TypeOrmModule.forFeature([LocalProduction])],
   controllers: [ProductionController],
   providers: [ProductionService],
 })

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { RegisterProductionDto } from './dtos/register-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Production } from './entities/production.entity';
+import { LocalProduction } from './entities/local-production.entity';
 import { Repository } from 'typeorm';
 import { FilterProductionDto } from './dtos/filter-production.dtos';
 
@@ -14,8 +14,8 @@ export class ProductionService {
   private logger = new Logger(ProductionService.name);
 
   constructor(
-    @InjectRepository(Production)
-    private readonly productionRepository: Repository<Production>,
+    @InjectRepository(LocalProduction)
+    private readonly productionRepository: Repository<LocalProduction>,
   ) {}
 
   async register(registerProductionDto: RegisterProductionDto) {

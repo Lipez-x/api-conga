@@ -3,21 +3,25 @@ import {
   BeforeUpdate,
   Column,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity('production')
-export class Production {
+@Entity('local_production')
+export class LocalProduction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'producer_name', type: 'text' })
-  producerName: string;
-
+  @Index()
   @Column({ type: 'date' })
   date: Date;
 
-  @Column({ name: 'gross_quantity', type: 'decimal', precision: 10, scale: 2 })
+  @Column({
+    name: 'gross_quantity',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+  })
   grossQuantity: number;
 
   @Column({
@@ -29,17 +33,17 @@ export class Production {
   consumedQuantity: number;
 
   @Column({
-    name: 'sellable_quantity',
+    name: 'total_quantity',
     type: 'decimal',
     precision: 10,
     scale: 2,
   })
-  sellableQuantity: number;
+  totalQuantity: number;
 
   @BeforeInsert()
   @BeforeUpdate()
-  calculateSellableQuantity() {
-    this.sellableQuantity =
+  calculateTotalQuantity() {
+    this.totalQuantity =
       Number(this.grossQuantity) - Number(this.consumedQuantity);
   }
 }

@@ -20,7 +20,7 @@ import { OperationalCost } from './operational-cost/entities/operational-cost.en
 import { ExpensesModule } from './expenses/expenses.module';
 import { Expense } from './expenses/entities/expense.entity';
 import { ProductionModule } from './production/production.module';
-import { Production } from './production/entities/production.entity';
+import { Production } from './production/entities/local-production.entity';
 import { SalePriceModule } from './sale-price/sale-price.module';
 import { SalePrice } from './sale-price/entities/sale-price-entity';
 
