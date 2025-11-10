@@ -10,7 +10,7 @@ export class ProducerProduction {
   date: Date;
 
   @Column({ name: 'producer_name', type: 'text' })
-  producer_name: string;
+  producerName: string;
 
   @Column({
     name: 'total_quantity',

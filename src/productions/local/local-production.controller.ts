@@ -15,7 +15,7 @@ import { FilterLocalProductionDto } from './dtos/filter-local-production.dtos';
 
 @Roles(UserRole.ADMIN)
 @UsePipes(ValidationPipe)
-@Controller('production/local')
+@Controller('productions/local')
 export class LocalProductionController {
   constructor(
     private readonly localProductionService: LocalProductionService,
