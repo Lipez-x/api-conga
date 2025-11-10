@@ -33,25 +33,19 @@ export class ProductionService {
 
   async findAll(filters: FilterProductionDto) {
     const {
-      producerName,
       dateFrom,
       dateTo,
       grossQuantityMin,
       grossQuantityMax,
       consumedQuantityMin,
       consumedQuantityMax,
-      sellableQuantityMin,
-      sellableQuantityMax,
+      totalQuantityMin,
+      totalQuantityMax,
       page = 1,
       limit = 10,
     } = filters;
 
     const query = this.productionRepository.createQueryBuilder('production');
-
-    if (producerName)
-      query.andWhere('production.producer_name ILIKE :producerName', {
-        producerName: `%${producerName}%`,
-      });
 
     if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
     if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
@@ -71,13 +65,13 @@ export class ProductionService {
       query.andWhere('production.consumed_quantity <= :consumedQuantityMax', {
         consumedQuantityMax,
       });
-    if (sellableQuantityMin)
-      query.andWhere('production.sellable_quantity >= :sellableQuantityMin', {
-        sellableQuantityMin,
+    if (totalQuantityMin)
+      query.andWhere('production.total_quantity >= :totalQuantityMin', {
+        totalQuantityMin,
       });
-    if (sellableQuantityMax)
-      query.andWhere('production.sellable_quantity <= :sellableQuantityMax', {
-        sellableQuantityMax,
+    if (totalQuantityMax)
+      query.andWhere('production.total_quantity <= :totalQuantityMax', {
+        totalQuantityMax,
       });
 
     try {

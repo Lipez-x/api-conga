@@ -13,7 +13,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { FilterProductionDto } from './dtos/filter-production.dtos';
 
-@Roles(UserRole.COLLABORATOR)
+@Roles(UserRole.ADMIN)
 @UsePipes(ValidationPipe)
 @Controller('production')
 export class ProductionController {

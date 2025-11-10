@@ -8,10 +8,6 @@ import {
 } from 'class-validator';
 
 export class FilterProductionDto {
-  @IsString()
-  @IsOptional()
-  producerName?: string;
-
   @IsDateString()
   @IsOptional()
   dateFrom?: Date;
@@ -48,13 +44,13 @@ export class FilterProductionDto {
   @IsNumber()
   @Min(0)
   @IsOptional()
-  sellableQuantityMin?: number;
+  totalQuantityMin?: number;
 
   @Type(() => Number)
   @IsNumber()
   @Min(0)
   @IsOptional()
-  sellableQuantityMax?: number;
+  totalQuantityMax?: number;
 
   @IsOptional()
   @Type(() => Number)

@@ -5,14 +5,9 @@ import {
   IsNumber,
   IsString,
   Min,
-  Validate,
 } from 'class-validator';
 
 export class RegisterProductionDto {
-  @IsString()
-  @IsNotEmpty()
-  producerName: string;
-
   @IsDateString()
   @IsNotEmpty()
   date: Date;
