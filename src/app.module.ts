@@ -19,6 +19,7 @@ import { OperationalCostModule } from './operational-cost/operational-cost.modul
 import { OperationalCost } from './operational-cost/entities/operational-cost.entity';
 import { ExpensesModule } from './expenses/expenses.module';
 import { Expense } from './expenses/entities/expense.entity';
+import { RolesGuard } from './auth/guards/roles.guard';
 
 @Module({
   imports: [
@@ -57,6 +58,10 @@ import { Expense } from './expenses/entities/expense.entity';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })
