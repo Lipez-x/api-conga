@@ -19,6 +19,11 @@ import { OperationalCostModule } from './operational-cost/operational-cost.modul
 import { OperationalCost } from './operational-cost/entities/operational-cost.entity';
 import { ExpensesModule } from './expenses/expenses.module';
 import { Expense } from './expenses/entities/expense.entity';
+import { SalePriceModule } from './sale-price/sale-price.module';
+import { SalePrice } from './sale-price/entities/sale-price-entity';
+import { LocalProduction } from './productions/local/entities/local-production.entity';
+import { ProductionsModule } from './productions/productions.module';
+import { ProducerProduction } from './productions/producer/entities/producer-production.entity';
 import { RolesGuard } from './auth/guards/roles.guard';
 
 @Module({
@@ -41,6 +46,9 @@ import { RolesGuard } from './auth/guards/roles.guard';
         Supplies,
         OperationalCost,
         Expense,
+        LocalProduction,
+        ProducerProduction,
+        SalePrice,
       ],
       synchronize: false,
     }),
@@ -51,6 +59,8 @@ import { RolesGuard } from './auth/guards/roles.guard';
     SuppliesModule,
     OperationalCostModule,
     ExpensesModule,
+    ProductionsModule,
+    SalePriceModule,
   ],
   controllers: [AppController],
   providers: [
