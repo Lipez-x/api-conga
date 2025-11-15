@@ -24,6 +24,7 @@ import { SalePrice } from './sale-price/entities/sale-price-entity';
 import { LocalProduction } from './productions/local/entities/local-production.entity';
 import { ProductionsModule } from './productions/productions.module';
 import { ProducerProduction } from './productions/producer/entities/producer-production.entity';
+import { RolesGuard } from './auth/guards/roles.guard';
 
 @Module({
   imports: [
@@ -67,6 +68,10 @@ import { ProducerProduction } from './productions/producer/entities/producer-pro
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })
