@@ -26,6 +26,7 @@ import { ProductionsModule } from './productions/productions.module';
 import { ProducerProduction } from './productions/producer/entities/producer-production.entity';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { ReceivesModule } from './receives/receives.module';
+import { Receive } from './receives/entities/receive.entity';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ReceivesModule } from './receives/receives.module';
         LocalProduction,
         ProducerProduction,
         SalePrice,
+        Receive,
       ],
       synchronize: false,
     }),
