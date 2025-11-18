@@ -1,4 +1,12 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Receive } from 'src/receives/entities/receive.entity';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('producer_production')
 export class ProducerProduction {
@@ -6,7 +14,8 @@ export class ProducerProduction {
   id: string;
 
   @Index()
-  @Column({ type: 'date' })
+  @ManyToOne(() => Receive, (receive) => receive.producerProductions)
+  @JoinColumn({ referencedColumnName: 'date' })
   date: Date;
 
   @Column({ name: 'producer_name', type: 'text' })
