@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ProducerProduction } from './entities/producer-production.entity';
 import { Repository } from 'typeorm';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
+import { ReceivesService } from 'src/receives/receives.service';
 
 @Injectable()
 export class ProducerProductionService {
@@ -16,6 +17,7 @@ export class ProducerProductionService {
   constructor(
     @InjectRepository(ProducerProduction)
     private readonly producerProductionRepository: Repository<ProducerProduction>,
+    private readonly receivesService: ReceivesService,
   ) {}
 
   async register(registerProducerProductionDto: RegisterProducerProductionDto) {
@@ -24,7 +26,14 @@ export class ProducerProductionService {
         ...registerProducerProductionDto,
       });
 
-      return await this.producerProductionRepository.save(production);
+      const receive = await this.receivesService.findOrCreate(
+        registerProducerProductionDto.date,
+      );
+
+      receive.producerProductions.push(production);
+
+      await this.receivesService.save(receive);
+      await this.producerProductionRepository.save(production);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
