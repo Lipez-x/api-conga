@@ -8,10 +8,22 @@ import { ProducerProductionService } from './producer/producer-production.servic
 import { ProducerProduction } from './producer/entities/producer-production.entity';
 import { ProductionsController } from './productions.controller';
 import { ProductionsService } from './productions.service';
+import { ReceivesModule } from 'src/receives/receives.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([LocalProduction, ProducerProduction])],
-  controllers: [LocalProductionController, ProducerProductionController, ProductionsController],
-  providers: [LocalProductionService, ProducerProductionService, ProductionsService],
+  imports: [
+    TypeOrmModule.forFeature([LocalProduction, ProducerProduction]),
+    ReceivesModule,
+  ],
+  controllers: [
+    LocalProductionController,
+    ProducerProductionController,
+    ProductionsController,
+  ],
+  providers: [
+    LocalProductionService,
+    ProducerProductionService,
+    ProductionsService,
+  ],
 })
 export class ProductionsModule {}
