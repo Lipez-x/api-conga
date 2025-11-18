@@ -54,9 +54,10 @@ export class ReceivesService {
         salePrice: salePrice.value,
         localProductions: [],
         producerProductions: [],
+        tankQuantity: 0,
       });
 
-      return receive;
+      return await this.receiveRepository.save(receive);
     } catch (error) {
       this.logger.error(error.message);
 
@@ -68,7 +69,7 @@ export class ReceivesService {
     }
   }
 
-  async save(receive: Receive) {
+  async recalculateAndSave(receive: Receive) {
     try {
       const totalLocal = receive.localProductions.reduce(
         (sum, lp) => sum + Number(lp.grossQuantity - lp.consumedQuantity),

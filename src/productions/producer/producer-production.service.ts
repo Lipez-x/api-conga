@@ -30,10 +30,10 @@ export class ProducerProductionService {
         registerProducerProductionDto.date,
       );
 
-      receive.producerProductions.push(production);
-
-      await this.receivesService.save(receive);
       await this.producerProductionRepository.save(production);
+
+      receive.producerProductions.push(production);
+      await this.receivesService.recalculateAndSave(receive);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
