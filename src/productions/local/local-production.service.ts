@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LocalProduction } from './entities/local-production.entity';
 import { Repository } from 'typeorm';
 import { FilterLocalProductionDto } from './dtos/filter-local-production.dto';
+import { ReceivesService } from 'src/receives/receives.service';
 
 @Injectable()
 export class LocalProductionService {
@@ -16,6 +17,7 @@ export class LocalProductionService {
   constructor(
     @InjectRepository(LocalProduction)
     private readonly localProductionRepository: Repository<LocalProduction>,
+    private readonly receivesService: ReceivesService,
   ) {}
 
   async register(registerLocalProductionDto: RegisterLocalProductionDto) {
@@ -24,7 +26,14 @@ export class LocalProductionService {
         ...registerLocalProductionDto,
       });
 
-      return await this.localProductionRepository.save(production);
+      const receive = await this.receivesService.findOrCreate(
+        registerLocalProductionDto.date,
+      );
+
+      receive.localProductions.push(production);
+
+      await this.receivesService.save(receive);
+      await this.localProductionRepository.save(production);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
