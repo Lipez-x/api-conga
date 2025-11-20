@@ -18,16 +18,19 @@ export class ProductionsService {
     const query = this.dataSource
       .createQueryBuilder()
       .select('l.date', 'date')
-      .addSelect('l.gross_quantity', 'grossQuantity')
-      .addSelect('l.consumed_quantity', 'consumedQuantity')
-      .addSelect('l.total_quantity', 'totalQuantity')
-      .addSelect('COALESCE(SUM(p.total_quantity), 0)', 'totalProducers')
+      .addSelect('SUM(l.gross_quantity)', 'grossQuantity')
+      .addSelect('SUM(l.consumed_quantity)', 'consumedQuantity')
+      .addSelect('SUM(l.total_quantity)', 'totalQuantity')
+      .addSelect(
+        (qb) =>
+          qb
+            .select('COALESCE(SUM(pp.total_quantity), 0)')
+            .from(ProducerProduction, 'pp')
+            .where('pp.date = l.date'),
+        'totalProducers',
+      )
       .from(LocalProduction, 'l')
-      .leftJoin(ProducerProduction, 'p', 'p.date = l.date')
       .groupBy('l.date')
-      .addGroupBy('l.gross_quantity')
-      .addGroupBy('l.consumed_quantity')
-      .addGroupBy('l.total_quantity')
       .orderBy('l.date', 'DESC');
 
     if (dateFrom) query.andWhere('l.date >= :dateFrom', { dateFrom });
