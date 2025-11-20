@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { RegisterLocalProductionDto } from './dtos/register-local-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -99,6 +100,30 @@ export class LocalProductionService {
       };
     } catch (error) {
       this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async findById(id: string) {
+    try {
+      const localProduction = await this.localProductionRepository.findOne({
+        where: { id },
+      });
+
+      if (!localProduction) {
+        throw new NotFoundException(
+          `Produção local de id ${id} não encontrada`,
+        );
+      }
+
+      return localProduction;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(error.message);
     }
   }
