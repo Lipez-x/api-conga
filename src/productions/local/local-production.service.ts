@@ -175,4 +175,38 @@ export class LocalProductionService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async delete(id: string) {
+    try {
+      const localProduction = await this.localProductionRepository.findOne({
+        where: { id },
+        relations: [
+          'receive',
+          'receive.localProductions',
+          'receive.producerProductions',
+        ],
+      });
+
+      if (!localProduction) {
+        throw new NotFoundException(
+          `Produção local de id ${id} não encontrada`,
+        );
+      }
+
+      const receive = localProduction.receive;
+      await this.receivesService.removeLocalProduction(
+        receive,
+        localProduction,
+      );
+      await this.localProductionRepository.delete(localProduction.id);
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

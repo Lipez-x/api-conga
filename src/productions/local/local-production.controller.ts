@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -48,5 +49,10 @@ export class LocalProductionController {
       id,
       updateLocalProductionDto,
     );
+  }
+
+  @Delete('/:id')
+  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.localProductionService.delete(id);
   }
 }
