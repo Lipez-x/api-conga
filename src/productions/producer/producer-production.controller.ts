@@ -64,6 +64,17 @@ export class ProducerProductionController {
     );
   }
 
+  @Put('/requests/:id')
+  async updateRequest(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateProducerProductionDto: UpdateProducerProductionDto,
+  ) {
+    return await this.producerProductionService.updateRequest(
+      id,
+      updateProducerProductionDto,
+    );
+  }
+
   @Put('/:id')
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,

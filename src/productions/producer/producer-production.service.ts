@@ -235,6 +235,7 @@ export class ProducerProductionService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
   async findById(id: string) {
     try {
       const producerProduction =
@@ -249,6 +250,34 @@ export class ProducerProductionService {
       }
 
       return producerProduction;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async updateRequest(
+    id: string,
+    updateProducerProductionDto: UpdateProducerProductionDto,
+  ) {
+    try {
+      const request = await this.producerProductionRequestRepository.preload({
+        id,
+        ...updateProducerProductionDto,
+      });
+
+      if (!request) {
+        throw new NotFoundException(
+          `Solicitação de registro de produção de produtor com id ${id} não encontrada`,
+        );
+      }
+
+      await this.producerProductionRequestRepository.save(request);
     } catch (error) {
       this.logger.error(error.message);
 
