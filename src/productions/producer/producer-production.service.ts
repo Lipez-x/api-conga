@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  Req,
 } from '@nestjs/common';
 import { RegisterProducerProductionDto } from './dtos/register-producer-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +16,7 @@ import { ReceivesService } from 'src/receives/receives.service';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 import { ProducerProductionRequest } from './entities/producer-production-request.entity';
 import { RequestStatus } from './enums/request-status.enum';
+import { stat } from 'fs';
 
 @Injectable()
 export class ProducerProductionService {
@@ -181,6 +183,58 @@ export class ProducerProductionService {
     }
   }
 
+  async findAllRequests(
+    filters: FilterProducerProductionDto,
+    status: RequestStatus = RequestStatus.PENDING,
+  ) {
+    const {
+      dateFrom,
+      dateTo,
+      producerName,
+      totalQuantityMin,
+      totalQuantityMax,
+      page = 1,
+      limit = 10,
+    } = filters;
+
+    const query = this.producerProductionRequestRepository
+      .createQueryBuilder('request')
+      .withDeleted();
+
+    if (status) query.andWhere('request.status = :status', { status });
+    if (dateFrom) query.andWhere('request.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('request.date <= :dateTo', { dateTo });
+    if (producerName)
+      query.andWhere('request.producer_name ILIKE :producerName', {
+        producerName: `%${producerName}%`,
+      });
+    if (totalQuantityMin)
+      query.andWhere('request.total_quantity >= :totalQuantityMin', {
+        totalQuantityMin,
+      });
+    if (totalQuantityMax)
+      query.andWhere('request.total_quantity <= :totalQuantityMax', {
+        totalQuantityMax,
+      });
+
+    try {
+      const [rows, total] = await query
+        .skip((page - 1) * limit)
+        .take(10)
+        .getManyAndCount();
+
+      return {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        data: rows,
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
   async findById(id: string) {
     try {
       const producerProduction =

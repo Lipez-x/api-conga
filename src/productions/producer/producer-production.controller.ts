@@ -18,6 +18,7 @@ import { RegisterProducerProductionDto } from './dtos/register-producer-producti
 import { ProducerProductionService } from './producer-production.service';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
+import { RequestStatus } from './enums/request-status.enum';
 
 @UsePipes(ValidationPipe)
 @Controller('productions/producer')
@@ -46,9 +47,21 @@ export class ProducerProductionController {
 
     return await this.producerProductionService.validateRequest(id);
   }
+
   @Get()
   async findAll(@Query() filters: FilterProducerProductionDto) {
     return await this.producerProductionService.findAll(filters);
+  }
+
+  @Get('/requests')
+  async findAllRequests(
+    @Query() filters: FilterProducerProductionDto,
+    @Query('status') status: RequestStatus,
+  ) {
+    return await this.producerProductionService.findAllRequests(
+      filters,
+      status,
+    );
   }
 
   @Put('/:id')
