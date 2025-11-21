@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import { SalePriceService } from 'src/sale-price/sale-price.service';
 import { LocalProduction } from 'src/productions/local/entities/local-production.entity';
 import { ProducerProduction } from 'src/productions/producer/entities/producer-production.entity';
+import { ReceivesFilterDto } from './dtos/receives-filter.dto';
 
 @Injectable()
 export class ReceivesService {
@@ -19,6 +20,52 @@ export class ReceivesService {
     private readonly receiveRepository: Repository<Receive>,
     private readonly salePriceService: SalePriceService,
   ) {}
+
+  async findAll(filters: ReceivesFilterDto) {
+    const {
+      dateFrom,
+      dateTo,
+      minTank,
+      maxTank,
+      minValue,
+      maxValue,
+      page = 1,
+      limit = 10,
+    } = filters;
+
+    const query = this.receiveRepository
+      .createQueryBuilder('receive')
+      .orderBy('receive.date', 'DESC');
+
+    if (dateFrom) query.andWhere('receive.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('receive.date <= :dateTo', { dateTo });
+    if (minTank)
+      query.andWhere('receive.tank_quantity >= :minTank', { minTank });
+    if (maxTank)
+      query.andWhere('receive.tank_quantity <= maxTank', { maxTank });
+    if (minValue)
+      query.andWhere('receive.totalPrice >= :minValue', { minValue });
+    if (maxValue)
+      query.andWhere('receive.totalPrice <= :maxValue', { maxValue });
+
+    try {
+      const [rows, total] = await query
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
+
+      return {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        data: rows,
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 
   async findByDate(date: Date) {
     try {
