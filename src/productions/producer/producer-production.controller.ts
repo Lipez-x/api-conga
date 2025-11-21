@@ -86,6 +86,11 @@ export class ProducerProductionController {
     );
   }
 
+  @Delete('/requests/:id')
+  async deleteRequest(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.producerProductionService.deleteRequest(id);
+  }
+
   @Delete('/:id')
   async delete(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.producerProductionService.delete(id);

@@ -332,6 +332,30 @@ export class ProducerProductionService {
     }
   }
 
+  async deleteRequest(id: string) {
+    try {
+      const request = await this.producerProductionRequestRepository.findOne({
+        where: { id },
+      });
+
+      if (!request) {
+        throw new NotFoundException(
+          `Produção local de id ${id} não encontrada`,
+        );
+      }
+
+      await this.producerProductionRequestRepository.delete(request.id);
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async delete(id: string) {
     try {
       const producerProduction =
