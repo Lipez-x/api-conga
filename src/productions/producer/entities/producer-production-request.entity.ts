@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { RequestStatus } from '../enums/request-status.enum';
 
 @Entity('producer_production_request')
@@ -22,4 +27,7 @@ export class ProducerProductionRequest {
 
   @Column({ type: 'enum', enum: RequestStatus })
   status: RequestStatus;
+
+  @DeleteDateColumn()
+  validatedAt: Date;
 }

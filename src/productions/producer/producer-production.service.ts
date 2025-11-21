@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -7,7 +9,7 @@ import {
 import { RegisterProducerProductionDto } from './dtos/register-producer-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProducerProduction } from './entities/producer-production.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { ReceivesService } from 'src/receives/receives.service';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
@@ -47,6 +49,66 @@ export class ProducerProductionService {
       await this.producerProductionRequestRepository.save(request);
     } catch (error) {
       this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async validateRequest(id: string) {
+    try {
+      const request = await this.producerProductionRequestRepository.findOne({
+        where: { id },
+      });
+
+      if (!request) {
+        throw new NotFoundException(
+          `Solicitação de registro de produção de produtor com id ${id} não encontrada`,
+        );
+      }
+
+      const producerProduction: RegisterProducerProductionDto = {
+        date: request.date,
+        producerName: request.producerName,
+        totalQuantity: request.totalQuantity,
+      };
+
+      request.status = RequestStatus.ACCEPTED;
+
+      await this.register(producerProduction);
+      await this.producerProductionRequestRepository.save(request);
+      await this.producerProductionRequestRepository.softDelete(request.id);
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async unvalidateRequest(id: string) {
+    try {
+      const request = await this.producerProductionRequestRepository.findOne({
+        where: { id },
+      });
+
+      if (!request) {
+        throw new NotFoundException(
+          `Solicitação de registro de produção de produtor com id ${id} não encontrada`,
+        );
+      }
+
+      request.status = RequestStatus.REJECTED;
+      await this.producerProductionRequestRepository.save(request);
+      await this.producerProductionRequestRepository.softDelete(request.id);
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(error.message);
     }
   }

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseBoolPipe,
   ParseUUIDPipe,
   Post,
   Put,
@@ -34,6 +35,17 @@ export class ProducerProductionController {
     );
   }
 
+  @Roles(UserRole.ADMIN)
+  @Put('requests/validate/:id')
+  async validateRequest(
+    @Query('validated', new ParseBoolPipe()) validated: boolean,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ) {
+    if (!validated)
+      return await this.producerProductionService.unvalidateRequest(id);
+
+    return await this.producerProductionService.validateRequest(id);
+  }
   @Get()
   async findAll(@Query() filters: FilterProducerProductionDto) {
     return await this.producerProductionService.findAll(filters);
