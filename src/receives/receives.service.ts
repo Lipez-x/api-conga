@@ -125,14 +125,10 @@ export class ReceivesService {
     newDate?: Date,
   ) {
     try {
-      console.log(date);
-
       let receive: Receive = await this.findByDate(date);
 
       if (newDate != undefined) {
-        console.log('oi');
-
-        await this.removeLocalProduction(receive);
+        await this.removeLocalProduction(receive, production);
         receive = await this.findOrCreate(newDate);
         receive.localProductions.push(production);
       }
@@ -149,10 +145,10 @@ export class ReceivesService {
     }
   }
 
-  async removeLocalProduction(receive: Receive) {
+  async removeLocalProduction(receive: Receive, production: LocalProduction) {
     try {
       receive.localProductions = receive.localProductions.filter(
-        (production) => production.id !== production.id,
+        (p) => p.id !== production.id,
       );
 
       await this.recalculateAndSave(receive);

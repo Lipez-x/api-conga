@@ -139,9 +139,9 @@ export class LocalProductionService {
 
   async update(id: string, updateLocalProductionDto: UpdateLocalProductionDto) {
     try {
-      const localProduction = await this.localProductionRepository.preload({
-        id: id,
-        ...updateLocalProductionDto,
+      const localProduction = await this.localProductionRepository.findOne({
+        where: { id },
+        relations: ['receive'],
       });
 
       if (!localProduction) {
@@ -150,13 +150,17 @@ export class LocalProductionService {
         );
       }
 
+      const date = localProduction.date;
+      Object.assign(localProduction, updateLocalProductionDto);
+
+      await this.localProductionRepository.save(localProduction);
+
       const receive = await this.receivesService.getUpdatedReceive(
-        localProduction.date,
+        date,
         localProduction,
         updateLocalProductionDto.date,
       );
 
-      await this.localProductionRepository.save(localProduction);
       await this.receivesService.recalculateAndSave(receive);
       return {
         message: `Produção local id(${id}) atualizado com sucesso`,
