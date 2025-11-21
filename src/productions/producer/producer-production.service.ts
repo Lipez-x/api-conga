@@ -11,6 +11,8 @@ import { Repository } from 'typeorm';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { ReceivesService } from 'src/receives/receives.service';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
+import { ProducerProductionRequest } from './entities/producer-production-request.entity';
+import { RequestStatus } from './enums/request-status.enum';
 
 @Injectable()
 export class ProducerProductionService {
@@ -19,8 +21,35 @@ export class ProducerProductionService {
   constructor(
     @InjectRepository(ProducerProduction)
     private readonly producerProductionRepository: Repository<ProducerProduction>,
+    @InjectRepository(ProducerProductionRequest)
+    private readonly producerProductionRequestRepository: Repository<ProducerProductionRequest>,
     private readonly receivesService: ReceivesService,
   ) {}
+
+  async requestRegister(
+    registerProducerProductionDto: RegisterProducerProductionDto,
+  ) {
+    try {
+      const date = new Date(registerProducerProductionDto.date);
+
+      const limitDate = new Date();
+      limitDate.setDate(limitDate.getDate() - 8);
+
+      if (date > limitDate) {
+        return await this.register(registerProducerProductionDto);
+      }
+
+      const request = this.producerProductionRequestRepository.create({
+        ...registerProducerProductionDto,
+        status: RequestStatus.PENDING,
+      });
+
+      await this.producerProductionRequestRepository.save(request);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 
   async register(registerProducerProductionDto: RegisterProducerProductionDto) {
     try {

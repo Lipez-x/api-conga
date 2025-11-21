@@ -29,7 +29,7 @@ export class ProducerProductionController {
   async register(
     @Body() registerProducerProductionDto: RegisterProducerProductionDto,
   ) {
-    return await this.producerProductionService.register(
+    return await this.producerProductionService.requestRegister(
       registerProducerProductionDto,
     );
   }
