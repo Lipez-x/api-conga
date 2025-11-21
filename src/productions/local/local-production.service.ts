@@ -2,12 +2,15 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { RegisterLocalProductionDto } from './dtos/register-local-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LocalProduction } from './entities/local-production.entity';
 import { Repository } from 'typeorm';
 import { FilterLocalProductionDto } from './dtos/filter-local-production.dto';
+import { ReceivesService } from 'src/receives/receives.service';
+import { UpdateLocalProductionDto } from './dtos/update-local-production.dto';
 
 @Injectable()
 export class LocalProductionService {
@@ -16,6 +19,7 @@ export class LocalProductionService {
   constructor(
     @InjectRepository(LocalProduction)
     private readonly localProductionRepository: Repository<LocalProduction>,
+    private readonly receivesService: ReceivesService,
   ) {}
 
   async register(registerLocalProductionDto: RegisterLocalProductionDto) {
@@ -24,7 +28,14 @@ export class LocalProductionService {
         ...registerLocalProductionDto,
       });
 
-      return await this.localProductionRepository.save(production);
+      const receive = await this.receivesService.findOrCreate(
+        registerLocalProductionDto.date,
+      );
+
+      await this.localProductionRepository.save(production);
+
+      receive.localProductions.push(production);
+      await this.receivesService.recalculateAndSave(receive);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -81,15 +92,120 @@ export class LocalProductionService {
         .take(10)
         .getManyAndCount();
 
+      const data = rows.map((item) => ({
+        id: item.id,
+        date: item.date,
+        grossQuantity: item.grossQuantity,
+        consumedQuantity: item.consumedQuantity,
+        totalQuantity: item.totalQuantity,
+      }));
+
       return {
         total,
         page,
         limit,
         totalPages: Math.ceil(total / limit),
-        data: rows,
+        data,
       };
     } catch (error) {
       this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async findById(id: string) {
+    try {
+      const localProduction = await this.localProductionRepository.findOne({
+        where: { id },
+      });
+
+      if (!localProduction) {
+        throw new NotFoundException(
+          `Produção local de id ${id} não encontrada`,
+        );
+      }
+
+      return localProduction;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async update(id: string, updateLocalProductionDto: UpdateLocalProductionDto) {
+    try {
+      const localProduction = await this.localProductionRepository.findOne({
+        where: { id },
+        relations: ['receive'],
+      });
+
+      if (!localProduction) {
+        throw new NotFoundException(
+          `Produção local de id ${id} não encontrada`,
+        );
+      }
+
+      const date = localProduction.date;
+      Object.assign(localProduction, updateLocalProductionDto);
+
+      await this.localProductionRepository.save(localProduction);
+
+      const receive = await this.receivesService.replaceLocalProduction(
+        date,
+        localProduction,
+        updateLocalProductionDto.date,
+      );
+
+      await this.receivesService.recalculateAndSave(receive);
+      return {
+        message: `Produção local id(${id}) atualizado com sucesso`,
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async delete(id: string) {
+    try {
+      const localProduction = await this.localProductionRepository.findOne({
+        where: { id },
+        relations: [
+          'receive',
+          'receive.localProductions',
+          'receive.producerProductions',
+        ],
+      });
+
+      if (!localProduction) {
+        throw new NotFoundException(
+          `Produção local de id ${id} não encontrada`,
+        );
+      }
+
+      const receive = localProduction.receive;
+      await this.receivesService.removeLocalProduction(
+        receive,
+        localProduction,
+      );
+      await this.localProductionRepository.delete(localProduction.id);
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(error.message);
     }
   }

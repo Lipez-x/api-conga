@@ -1,8 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
+  ParseUUIDPipe,
   Post,
+  Put,
   Query,
   UsePipes,
   ValidationPipe,
@@ -12,6 +16,7 @@ import { UserRole } from 'src/users/enums/user-role.enum';
 import { RegisterProducerProductionDto } from './dtos/register-producer-production.dto';
 import { ProducerProductionService } from './producer-production.service';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
+import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 
 @Roles(UserRole.COLLABORATOR)
 @UsePipes(ValidationPipe)
@@ -33,5 +38,21 @@ export class ProducerProductionController {
   @Get()
   async findAll(@Query() filters: FilterProducerProductionDto) {
     return await this.producerProductionService.findAll(filters);
+  }
+
+  @Put('/:id')
+  async update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateProducerProductionDto: UpdateProducerProductionDto,
+  ) {
+    return await this.producerProductionService.update(
+      id,
+      updateProducerProductionDto,
+    );
+  }
+
+  @Delete('/:id')
+  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.producerProductionService.delete(id);
   }
 }

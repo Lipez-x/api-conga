@@ -1,9 +1,12 @@
+import { Receive } from 'src/receives/entities/receive.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
   Column,
   Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -11,6 +14,10 @@ import {
 export class LocalProduction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @ManyToOne(() => Receive, (receive) => receive.localProductions)
+  @JoinColumn()
+  receive: Receive;
 
   @Index()
   @Column({ type: 'date' })

@@ -25,6 +25,8 @@ import { LocalProduction } from './productions/local/entities/local-production.e
 import { ProductionsModule } from './productions/productions.module';
 import { ProducerProduction } from './productions/producer/entities/producer-production.entity';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { ReceivesModule } from './receives/receives.module';
+import { Receive } from './receives/entities/receive.entity';
 
 @Module({
   imports: [
@@ -49,6 +51,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
         LocalProduction,
         ProducerProduction,
         SalePrice,
+        Receive,
       ],
       synchronize: false,
     }),
@@ -61,6 +64,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
     ExpensesModule,
     ProductionsModule,
     SalePriceModule,
+    ReceivesModule,
   ],
   controllers: [AppController],
   providers: [
