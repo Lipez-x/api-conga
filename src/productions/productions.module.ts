@@ -10,6 +10,8 @@ import { ProductionsController } from './productions.controller';
 import { ProductionsService } from './productions.service';
 import { ReceivesModule } from 'src/receives/receives.module';
 import { ProducerProductionRequest } from './producer/entities/producer-production-request.entity';
+import { ProducerProductionRequestService } from './producer/producer-production-request.service';
+import { ProducerProductionRequestController } from './producer/producer-production-request.controller';
 
 @Module({
   imports: [
@@ -24,11 +26,13 @@ import { ProducerProductionRequest } from './producer/entities/producer-producti
     LocalProductionController,
     ProducerProductionController,
     ProductionsController,
+    ProducerProductionRequestController,
   ],
   providers: [
     LocalProductionService,
     ProducerProductionService,
     ProductionsService,
+    ProducerProductionRequestService,
   ],
 })
 export class ProductionsModule {}

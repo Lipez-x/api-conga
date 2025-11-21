@@ -14,23 +14,19 @@ import {
 } from '@nestjs/common';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
-import { RegisterProducerProductionDto } from './dtos/register-producer-production.dto';
-import { ProducerProductionService } from './producer-production.service';
-import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
-import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
-import { RequestStatus } from './enums/request-status.enum';
 import { ProducerProductionRequestService } from './producer-production-request.service';
-import { User } from 'src/users/entities/user.entity';
+import { RegisterProducerProductionDto } from './dtos/register-producer-production.dto';
+import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
+import { RequestStatus } from './enums/request-status.enum';
+import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 
 @UsePipes(ValidationPipe)
-@Controller('productions/producer')
-export class ProducerProductionController {
+@Controller('productions/producer/requests')
+export class ProducerProductionRequestController {
   constructor(
-    private readonly producerProductionService: ProducerProductionService,
     private readonly producerProductionRequestService: ProducerProductionRequestService,
   ) {}
 
-  @Roles(UserRole.ADMIN)
   @Post('/register')
   async register(
     @Body() registerProducerProductionDto: RegisterProducerProductionDto,
@@ -41,8 +37,23 @@ export class ProducerProductionController {
   }
 
   @Get()
-  async findAll(@Query() filters: FilterProducerProductionDto) {
-    return await this.producerProductionService.findAll(filters);
+  async findAll(
+    @Query() filters: FilterProducerProductionDto,
+    @Query('status') status: RequestStatus,
+  ) {
+    return await this.producerProductionRequestService.findAll(filters, status);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Put('/validate/:id')
+  async validate(
+    @Query('validated', new ParseBoolPipe()) validated: boolean,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ) {
+    if (!validated)
+      return await this.producerProductionRequestService.unvalidate(id);
+
+    return await this.producerProductionRequestService.validate(id);
   }
 
   @Put('/:id')
@@ -50,14 +61,14 @@ export class ProducerProductionController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateProducerProductionDto: UpdateProducerProductionDto,
   ) {
-    return await this.producerProductionService.update(
+    return await this.producerProductionRequestService.update(
       id,
       updateProducerProductionDto,
     );
   }
 
   @Delete('/:id')
-  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
-    return await this.producerProductionService.delete(id);
+  async deleteRequest(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.producerProductionRequestService.delete(id);
   }
 }
