@@ -1,16 +1,21 @@
 import {
+  BadRequestException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  Req,
 } from '@nestjs/common';
 import { RegisterProducerProductionDto } from './dtos/register-producer-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProducerProduction } from './entities/producer-production.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { ReceivesService } from 'src/receives/receives.service';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
+import { ProducerProductionRequest } from './entities/producer-production-request.entity';
+import { RequestStatus } from './enums/request-status.enum';
 
 @Injectable()
 export class ProducerProductionService {
@@ -19,6 +24,8 @@ export class ProducerProductionService {
   constructor(
     @InjectRepository(ProducerProduction)
     private readonly producerProductionRepository: Repository<ProducerProduction>,
+    @InjectRepository(ProducerProductionRequest)
+    private readonly producerProductionRequestRepository: Repository<ProducerProductionRequest>,
     private readonly receivesService: ReceivesService,
   ) {}
 
@@ -157,6 +164,8 @@ export class ProducerProductionService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+
 
   async delete(id: string) {
     try {

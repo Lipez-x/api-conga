@@ -9,21 +9,30 @@ import { ProducerProduction } from './producer/entities/producer-production.enti
 import { ProductionsController } from './productions.controller';
 import { ProductionsService } from './productions.service';
 import { ReceivesModule } from 'src/receives/receives.module';
+import { ProducerProductionRequest } from './producer/entities/producer-production-request.entity';
+import { ProducerProductionRequestService } from './producer/producer-production-request.service';
+import { ProducerProductionRequestController } from './producer/producer-production-request.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([LocalProduction, ProducerProduction]),
+    TypeOrmModule.forFeature([
+      LocalProduction,
+      ProducerProduction,
+      ProducerProductionRequest,
+    ]),
     ReceivesModule,
   ],
   controllers: [
     LocalProductionController,
     ProducerProductionController,
     ProductionsController,
+    ProducerProductionRequestController,
   ],
   providers: [
     LocalProductionService,
     ProducerProductionService,
     ProductionsService,
+    ProducerProductionRequestService,
   ],
 })
 export class ProductionsModule {}
