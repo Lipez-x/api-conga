@@ -157,4 +157,39 @@ export class ProducerProductionService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async delete(id: string) {
+    try {
+      const producerProduction =
+        await this.producerProductionRepository.findOne({
+          where: { id },
+          relations: [
+            'receive',
+            'receive.localProductions',
+            'receive.producerProductions',
+          ],
+        });
+
+      if (!producerProduction) {
+        throw new NotFoundException(
+          `Produção local de id ${id} não encontrada`,
+        );
+      }
+
+      const receive = producerProduction.receive;
+      await this.receivesService.removeProducerProduction(
+        receive,
+        producerProduction,
+      );
+      await this.producerProductionRepository.delete(producerProduction.id);
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }
