@@ -45,6 +45,7 @@ export class ProducerProductionController {
     return await this.producerProductionService.findAll(filters);
   }
 
+  @Roles(UserRole.ADMIN)
   @Put('/:id')
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -56,6 +57,7 @@ export class ProducerProductionController {
     );
   }
 
+  @Roles(UserRole.ADMIN)
   @Delete('/:id')
   async delete(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.producerProductionService.delete(id);

@@ -165,8 +165,6 @@ export class ProducerProductionService {
     }
   }
 
-
-
   async delete(id: string) {
     try {
       const producerProduction =
