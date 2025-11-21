@@ -56,10 +56,8 @@ export class LocalProductionService {
       limit = 10,
     } = filters;
 
-    const query = this.localProductionRepository
-      .createQueryBuilder('production')
-      .leftJoin('production.date', 'receive')
-      .addSelect('receive.date');
+    const query =
+      this.localProductionRepository.createQueryBuilder('production');
 
     if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
     if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
@@ -94,10 +92,9 @@ export class LocalProductionService {
         .take(10)
         .getManyAndCount();
 
-      //Débito técnico: nada interessante esse item as any aqui
       const data = rows.map((item) => ({
         id: item.id,
-        date: (item as any).date.date,
+        date: item.date,
         grossQuantity: item.grossQuantity,
         consumedQuantity: item.consumedQuantity,
         totalQuantity: item.totalQuantity,
@@ -108,7 +105,7 @@ export class LocalProductionService {
         page,
         limit,
         totalPages: Math.ceil(total / limit),
-        data: data,
+        data,
       };
     } catch (error) {
       this.logger.error(error.message);
@@ -143,7 +140,7 @@ export class LocalProductionService {
   async update(id: string, updateLocalProductionDto: UpdateLocalProductionDto) {
     try {
       const localProduction = await this.localProductionRepository.preload({
-        id,
+        id: id,
         ...updateLocalProductionDto,
       });
 
@@ -153,8 +150,10 @@ export class LocalProductionService {
         );
       }
 
-      const receive = await this.receivesService.findOrCreate(
+      const receive = await this.receivesService.getUpdatedReceive(
         localProduction.date,
+        localProduction,
+        updateLocalProductionDto.date,
       );
 
       await this.localProductionRepository.save(localProduction);

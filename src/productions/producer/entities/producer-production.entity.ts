@@ -13,9 +13,12 @@ export class ProducerProduction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ManyToOne(() => Receive, (receive) => receive.localProductions)
+  @JoinColumn()
+  receive: Receive;
+
   @Index()
-  @ManyToOne(() => Receive, (receive) => receive.producerProductions)
-  @JoinColumn({ referencedColumnName: 'date' })
+  @Column({ type: 'date' })
   date: Date;
 
   @Column({ name: 'producer_name', type: 'text' })
