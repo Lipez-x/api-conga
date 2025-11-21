@@ -10,6 +10,7 @@ import { LocalProduction } from './entities/local-production.entity';
 import { Repository } from 'typeorm';
 import { FilterLocalProductionDto } from './dtos/filter-local-production.dto';
 import { ReceivesService } from 'src/receives/receives.service';
+import { UpdateLocalProductionDto } from './dtos/update-local-production.dto';
 
 @Injectable()
 export class LocalProductionService {
@@ -55,8 +56,10 @@ export class LocalProductionService {
       limit = 10,
     } = filters;
 
-    const query =
-      this.localProductionRepository.createQueryBuilder('production');
+    const query = this.localProductionRepository
+      .createQueryBuilder('production')
+      .leftJoin('production.date', 'receive')
+      .addSelect('receive.date');
 
     if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
     if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
@@ -91,12 +94,21 @@ export class LocalProductionService {
         .take(10)
         .getManyAndCount();
 
+      //Débito técnico: nada interessante esse item as any aqui
+      const data = rows.map((item) => ({
+        id: item.id,
+        date: (item as any).date.date,
+        grossQuantity: item.grossQuantity,
+        consumedQuantity: item.consumedQuantity,
+        totalQuantity: item.totalQuantity,
+      }));
+
       return {
         total,
         page,
         limit,
         totalPages: Math.ceil(total / limit),
-        data: rows,
+        data: data,
       };
     } catch (error) {
       this.logger.error(error.message);
@@ -117,6 +129,39 @@ export class LocalProductionService {
       }
 
       return localProduction;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async update(id: string, updateLocalProductionDto: UpdateLocalProductionDto) {
+    try {
+      const localProduction = await this.localProductionRepository.preload({
+        id,
+        ...updateLocalProductionDto,
+      });
+
+      if (!localProduction) {
+        throw new NotFoundException(
+          `Produção local de id ${id} não encontrada`,
+        );
+      }
+
+      const receive = await this.receivesService.findOrCreate(
+        localProduction.date,
+      );
+
+      await this.localProductionRepository.save(localProduction);
+      await this.receivesService.recalculateAndSave(receive);
+      return {
+        message: `Produção local id(${id}) atualizado com sucesso`,
+      };
     } catch (error) {
       this.logger.error(error.message);
 
