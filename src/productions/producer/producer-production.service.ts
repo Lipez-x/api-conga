@@ -10,6 +10,7 @@ import { ProducerProduction } from './entities/producer-production.entity';
 import { Repository } from 'typeorm';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { ReceivesService } from 'src/receives/receives.service';
+import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 
 @Injectable()
 export class ProducerProductionService {
@@ -103,6 +104,49 @@ export class ProducerProductionService {
       }
 
       return producerProduction;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async update(
+    id: string,
+    updateProducerProductionDto: UpdateProducerProductionDto,
+  ) {
+    try {
+      const producerProduction =
+        await this.producerProductionRepository.findOne({
+          where: { id },
+          relations: ['receive'],
+        });
+
+      if (!producerProduction) {
+        throw new NotFoundException(
+          `Produção de produtor com id ${id} não encontrada`,
+        );
+      }
+
+      const date = producerProduction.date;
+      Object.assign(producerProduction, updateProducerProductionDto);
+
+      await this.producerProductionRepository.save(producerProduction);
+
+      const receive = await this.receivesService.replaceProducerProduction(
+        date,
+        producerProduction,
+        updateProducerProductionDto.date,
+      );
+
+      await this.receivesService.recalculateAndSave(receive);
+      return {
+        message: `Produção de produtor id(${id}) atualizado com sucesso`,
+      };
     } catch (error) {
       this.logger.error(error.message);
 
