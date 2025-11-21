@@ -20,7 +20,6 @@ import { FilterProducerProductionDto } from './dtos/filter-producer-production.d
 import { RequestStatus } from './enums/request-status.enum';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 
-@UsePipes(ValidationPipe)
 @Controller('productions/producer/requests')
 export class ProducerProductionRequestController {
   constructor(
@@ -57,6 +56,7 @@ export class ProducerProductionRequestController {
   }
 
   @Put('/:id')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateProducerProductionDto: UpdateProducerProductionDto,
