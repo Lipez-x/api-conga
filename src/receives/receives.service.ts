@@ -9,6 +9,7 @@ import { Receive } from './entities/receive.entity';
 import { Repository } from 'typeorm';
 import { SalePriceService } from 'src/sale-price/sale-price.service';
 import { LocalProduction } from 'src/productions/local/entities/local-production.entity';
+import { ProducerProduction } from 'src/productions/producer/entities/producer-production.entity';
 
 @Injectable()
 export class ReceivesService {
@@ -119,7 +120,11 @@ export class ReceivesService {
     }
   }
 
-  async getUpdated(date: Date, production: LocalProduction, newDate?: Date) {
+  async replaceLocalProduction(
+    date: Date,
+    production: LocalProduction,
+    newDate?: Date,
+  ) {
     try {
       let receive: Receive = await this.findByDate(date);
 
@@ -144,6 +149,54 @@ export class ReceivesService {
   async removeLocalProduction(receive: Receive, production: LocalProduction) {
     try {
       receive.localProductions = receive.localProductions.filter(
+        (p) => p.id !== production.id,
+      );
+
+      await this.recalculateAndSave(receive);
+      await this.remove(receive);
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async replaceProducerProduction(
+    date: Date,
+    production: ProducerProduction,
+    newDate?: Date,
+  ) {
+    try {
+      let receive: Receive = await this.findByDate(date);
+
+      if (newDate !== date && newDate !== undefined) {
+        await this.removeProducerProduction(receive, production);
+        receive = await this.findOrCreate(newDate);
+        receive.producerProductions.push(production);
+      }
+
+      return receive;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async removeProducerProduction(
+    receive: Receive,
+    production: ProducerProduction,
+  ) {
+    try {
+      receive.producerProductions = receive.producerProductions.filter(
         (p) => p.id !== production.id,
       );
 
