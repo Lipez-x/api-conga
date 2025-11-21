@@ -119,15 +119,11 @@ export class ReceivesService {
     }
   }
 
-  async getUpdatedReceive(
-    date: Date,
-    production: LocalProduction,
-    newDate?: Date,
-  ) {
+  async getUpdated(date: Date, production: LocalProduction, newDate?: Date) {
     try {
       let receive: Receive = await this.findByDate(date);
 
-      if (newDate != undefined) {
+      if (newDate !== date && newDate !== undefined) {
         await this.removeLocalProduction(receive, production);
         receive = await this.findOrCreate(newDate);
         receive.localProductions.push(production);
@@ -152,6 +148,28 @@ export class ReceivesService {
       );
 
       await this.recalculateAndSave(receive);
+      await this.remove(receive);
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async remove(receive: Receive) {
+    try {
+      if (
+        receive.localProductions.length === 0 &&
+        receive.producerProductions.length === 0
+      ) {
+        return await this.receiveRepository.delete(receive.id);
+      }
+
+      return receive;
     } catch (error) {
       this.logger.error(error.message);
 

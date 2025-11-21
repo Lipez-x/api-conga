@@ -155,7 +155,7 @@ export class LocalProductionService {
 
       await this.localProductionRepository.save(localProduction);
 
-      const receive = await this.receivesService.getUpdatedReceive(
+      const receive = await this.receivesService.getUpdated(
         date,
         localProduction,
         updateLocalProductionDto.date,
