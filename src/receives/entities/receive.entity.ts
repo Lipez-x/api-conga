@@ -7,17 +7,21 @@ import {
   Entity,
   OneToMany,
   PrimaryColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity('receives')
 export class Receive {
-  @PrimaryColumn('date')
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'date', nullable: false, unique: true })
   date: Date;
 
-  @OneToMany(() => LocalProduction, (lp) => lp.date)
+  @OneToMany(() => LocalProduction, (lp) => lp.receive)
   localProductions: LocalProduction[];
 
-  @OneToMany(() => ProducerProduction, (pp) => pp.date)
+  @OneToMany(() => ProducerProduction, (pp) => pp.receive)
   producerProductions: ProducerProduction[];
 
   @Column({ name: 'sale_price', type: 'decimal', precision: 12, scale: 2 })

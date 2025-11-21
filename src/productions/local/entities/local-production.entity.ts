@@ -15,9 +15,12 @@ export class LocalProduction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index()
   @ManyToOne(() => Receive, (receive) => receive.localProductions)
-  @JoinColumn({ name: 'date', referencedColumnName: 'date' })
+  @JoinColumn()
+  receive: Receive;
+
+  @Index()
+  @Column({ type: 'date' })
   date: Date;
 
   @Column({
