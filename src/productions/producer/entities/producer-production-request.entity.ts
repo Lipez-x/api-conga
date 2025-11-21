@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { RequestStatus } from '../enums/request-status.enum';
 
 @Entity('producer_production_request')
-export class ProducerProduction {
+export class ProducerProductionRequest {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

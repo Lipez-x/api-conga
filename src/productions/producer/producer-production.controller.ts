@@ -18,7 +18,6 @@ import { ProducerProductionService } from './producer-production.service';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 
-@Roles(UserRole.COLLABORATOR)
 @UsePipes(ValidationPipe)
 @Controller('productions/producer')
 export class ProducerProductionController {
