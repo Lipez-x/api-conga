@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { RegisterProducerProductionDto } from './dtos/register-producer-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -84,6 +85,31 @@ export class ProducerProductionService {
       };
     } catch (error) {
       this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async findById(id: string) {
+    try {
+      const producerProduction =
+        await this.producerProductionRepository.findOne({
+          where: { id },
+        });
+
+      if (!producerProduction) {
+        throw new NotFoundException(
+          `Produção de produtor com id ${id} não encontrada`,
+        );
+      }
+
+      return producerProduction;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(error.message);
     }
   }
