@@ -109,10 +109,7 @@ export class ProducerProductionRequestService {
     }
   }
 
-  async findAll(
-    filters: FilterProducerProductionDto,
-    status: RequestStatus = RequestStatus.PENDING,
-  ) {
+  async findAll(filters: FilterProducerProductionDto, status: RequestStatus) {
     const {
       dateFrom,
       dateTo,
@@ -125,7 +122,8 @@ export class ProducerProductionRequestService {
 
     const query = this.producerProductionRequestRepository
       .createQueryBuilder('request')
-      .withDeleted();
+      .withDeleted()
+      .orderBy('request.date', 'ASC');
 
     if (status) query.andWhere('request.status = :status', { status });
     if (dateFrom) query.andWhere('request.date >= :dateFrom', { dateFrom });
