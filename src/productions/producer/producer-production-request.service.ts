@@ -123,7 +123,7 @@ export class ProducerProductionRequestService {
     const query = this.producerProductionRequestRepository
       .createQueryBuilder('request')
       .withDeleted()
-      .orderBy('request.date', 'ASC');
+      .orderBy('request.date', 'DESC');
 
     if (status) query.andWhere('request.status = :status', { status });
     if (dateFrom) query.andWhere('request.date >= :dateFrom', { dateFrom });
