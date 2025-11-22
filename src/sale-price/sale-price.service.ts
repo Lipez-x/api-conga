@@ -34,7 +34,7 @@ export class SalePriceService {
 
     try {
       const salePrice = this.salePriceRepository.create({
-        value: value,
+        value,
         startDate: new Date(),
         endDate: new Date('9999-12-31'),
       });

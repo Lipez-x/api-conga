@@ -98,7 +98,7 @@ export class ReceivesService {
       });
 
       if (!receive) {
-        return await this.create(date);
+        return await this.create(new Date(date + 'T23:59:59.999'));
       }
 
       return receive;
