@@ -27,7 +27,6 @@ import { User } from 'src/users/entities/user.entity';
 export class ProducerProductionController {
   constructor(
     private readonly producerProductionService: ProducerProductionService,
-    private readonly producerProductionRequestService: ProducerProductionRequestService,
   ) {}
 
   @Roles(UserRole.ADMIN)
@@ -35,7 +34,7 @@ export class ProducerProductionController {
   async register(
     @Body() registerProducerProductionDto: RegisterProducerProductionDto,
   ) {
-    return await this.producerProductionRequestService.register(
+    return await this.producerProductionService.register(
       registerProducerProductionDto,
     );
   }
