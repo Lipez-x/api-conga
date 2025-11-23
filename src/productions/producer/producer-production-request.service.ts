@@ -144,7 +144,7 @@ export class ProducerProductionRequestService {
     try {
       const [rows, total] = await query
         .skip((page - 1) * limit)
-        .take(10)
+        .take(limit)
         .getManyAndCount();
 
       return {

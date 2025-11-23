@@ -81,7 +81,7 @@ export class ProducerProductionService {
     try {
       const [rows, total] = await query
         .skip((page - 1) * limit)
-        .take(10)
+        .take(limit)
         .getManyAndCount();
 
       return {

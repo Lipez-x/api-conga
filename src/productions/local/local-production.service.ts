@@ -89,7 +89,7 @@ export class LocalProductionService {
     try {
       const [rows, total] = await query
         .skip((page - 1) * limit)
-        .take(10)
+        .take(limit)
         .getManyAndCount();
 
       const data = rows.map((item) => ({
