@@ -51,24 +51,12 @@ export class ExpensesService {
 
       return {
         total: Number(total.total || 0),
-        result: [
-          {
-            category: ExpenseType.PERSONNEL,
-            total: Number(categories.totalPersonnel || 0),
-          },
-          {
-            category: ExpenseType.UTILITY,
-            total: Number(categories.totalUtility || 0),
-          },
-          {
-            category: ExpenseType.SUPPLIES,
-            total: Number(categories.totalSupplies || 0),
-          },
-          {
-            category: ExpenseType.OPERATIONAL,
-            total: Number(categories.totalOperational || 0),
-          },
-        ],
+        categories: {
+          PERSONNEL: Number(categories.totalPersonnel || 0),
+          UTILITY: Number(categories.totalUtility || 0),
+          SUPPLIES: Number(categories.totalSupplies || 0),
+          OPERATIONAL: Number(categories.totalOperational || 0),
+        },
       };
     } catch (error) {
       this.logger.error(error.message);
