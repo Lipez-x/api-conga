@@ -9,6 +9,7 @@ import { Expense } from './entities/expense.entity';
 import { Repository } from 'typeorm';
 import { ExpensesFilter } from './dtos/expenses-filter.dto';
 import { ExpenseType } from './enums/expense-type.enum';
+import { ComparePeriodsDto } from './dtos/compare-periods.dto';
 
 @Injectable()
 export class ExpensesService {
@@ -17,6 +18,8 @@ export class ExpensesService {
     @InjectRepository(Expense)
     private readonly expenseRepository: Repository<Expense>,
   ) {}
+
+  private format = (value: number) => Number(value.toFixed(2));
 
   async getGroupedExpenses(filters: ExpensesFilter) {
     const query = this.expenseRepository.createQueryBuilder('expense');
@@ -67,6 +70,44 @@ export class ExpensesService {
 
       throw new InternalServerErrorException(error.message);
     }
+  }
+
+  async compareExpensesByPeriod(dto: ComparePeriodsDto) {
+    const { dateFromOne, dateToOne, dateFromTwo, dateToTwo } = dto;
+
+    const periodOne = await this.getGroupedExpenses({
+      dateFrom: dateFromOne,
+      dateTo: dateToOne,
+    });
+
+    const periodTwo = await this.getGroupedExpenses({
+      dateFrom: dateFromTwo,
+      dateTo: dateToTwo,
+    });
+
+    const difference = {
+      total: this.format(periodOne.total - periodTwo.total),
+      categories: {
+        PERSONNEL: this.format(
+          periodOne.categories.PERSONNEL - periodTwo.categories.PERSONNEL,
+        ),
+        UTILITY: this.format(
+          periodOne.categories.UTILITY - periodTwo.categories.UTILITY,
+        ),
+        SUPPLIES: this.format(
+          periodOne.categories.SUPPLIES - periodTwo.categories.SUPPLIES,
+        ),
+        OPERATIONAL: this.format(
+          periodOne.categories.OPERATIONAL - periodTwo.categories.OPERATIONAL,
+        ),
+      },
+    };
+
+    return {
+      periodOne,
+      periodTwo,
+      difference,
+    };
   }
 
   async delete(id: string) {
