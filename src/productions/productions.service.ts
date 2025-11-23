@@ -15,7 +15,25 @@ export class ProductionsService {
   async getDailyProduction(filters: GetDailyProductionDto) {
     const { dateFrom, dateTo } = filters;
 
-    const sub =
+    const localQuery = this.dataSource
+      .createQueryBuilder()
+      .select('l.date', 'date')
+      .addSelect('SUM(l.gross_quantity)', 'gross_quantity')
+      .addSelect('SUM(l.consumed_quantity)', 'consumed_quantity')
+      .addSelect('SUM(l.total_quantity)', 'total_quantity')
+      .from(LocalProduction, 'l')
+      .groupBy('l.date')
+      .getQuery();
+
+    const producerQuery = this.dataSource
+      .createQueryBuilder()
+      .select('pp.date', 'date')
+      .addSelect('SUM(pp.total_quantity)', 'total_producers')
+      .from(ProducerProduction, 'pp')
+      .groupBy('pp.date')
+      .getQuery();
+
+    const datesQuery =
       this.dataSource
         .createQueryBuilder()
         .select('l.date', 'date')
@@ -33,14 +51,13 @@ export class ProductionsService {
     const query = this.dataSource
       .createQueryBuilder()
       .select('d.date', 'date')
-      .addSelect('COALESCE(SUM(l.gross_quantity), 0)', 'grossQuantity')
-      .addSelect('COALESCE(SUM(l.consumed_quantity), 0)', 'consumedQuantity')
-      .addSelect('COALESCE(SUM(l.total_quantity), 0)', 'totalQuantity')
-      .addSelect('COALESCE(SUM(pp.total_quantity), 0)', 'totalProducers')
-      .from(`(${sub})`, 'd')
-      .leftJoin(LocalProduction, 'l', 'l.date = d.date')
-      .leftJoin(ProducerProduction, 'pp', 'pp.date = d.date')
-      .groupBy('d.date')
+      .addSelect('COALESCE(l.gross_quantity, 0)', 'grossQuantity')
+      .addSelect('COALESCE(l.consumed_quantity, 0)', 'consumedQuantity')
+      .addSelect('COALESCE(l.total_quantity, 0)', 'totalQuantity')
+      .addSelect('COALESCE(p.total_producers, 0)', 'totalProducers')
+      .from(`(${datesQuery})`, 'd')
+      .leftJoin(`(${localQuery})`, 'l', 'l.date = d.date')
+      .leftJoin(`(${producerQuery})`, 'p', 'p.date = d.date')
       .orderBy('d.date', 'DESC');
 
     if (dateFrom) query.andWhere('l.date >= :dateFrom', { dateFrom });
