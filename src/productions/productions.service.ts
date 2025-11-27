@@ -13,7 +13,7 @@ export class ProductionsService {
   private logger = new Logger(ProductionsService.name);
   constructor(private readonly dataSource: DataSource) {}
   async getDailyProduction(filters: GetDailyProductionDto) {
-    const { dateFrom, dateTo } = filters;
+    const { dateFrom, dateTo, page = 1, limit = 10 } = filters;
 
     const localQuery = this.dataSource
       .createQueryBuilder()
@@ -63,7 +63,20 @@ export class ProductionsService {
     if (dateFrom) query.andWhere('l.date >= :dateFrom', { dateFrom });
     if (dateTo) query.andWhere('l.date <= :dateTo', { dateTo });
     try {
-      return await query.getRawMany();
+      const data = await query
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getRawMany();
+
+      const total = data.length;
+
+      return {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        data,
+      };
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
