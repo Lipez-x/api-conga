@@ -64,8 +64,8 @@ export class ProductionsService {
     if (dateTo) query.andWhere('l.date <= :dateTo', { dateTo });
     try {
       const data = await query
-        .skip((page - 1) * limit)
-        .take(limit)
+        .offset((page - 1) * limit)
+        .limit(limit)
         .getRawMany();
 
       const total = data.length;
