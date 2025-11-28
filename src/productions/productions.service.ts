@@ -84,4 +84,38 @@ export class ProductionsService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async getProductionDay() {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    try {
+      const localSum = await this.dataSource
+        .createQueryBuilder()
+        .select('SUM(l.total_quantity)', 'total')
+        .from(LocalProduction, 'l')
+        .where('l.date = :start', {
+          start: currentDate,
+        })
+        .getRawOne();
+
+      const producerSum = await this.dataSource
+        .createQueryBuilder()
+        .select('SUM(pp.total_quantity)', 'total')
+        .from(ProducerProduction, 'pp')
+        .where('pp.date = :start', {
+          start: currentDate,
+        })
+        .getRawOne();
+
+      const localTotal = Number(localSum.total) || 0;
+      const producersTotal = Number(producerSum.total) || 0;
+      const totalDay = (localTotal + producersTotal).toFixed(2);
+
+      return totalDay;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }
