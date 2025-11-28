@@ -123,4 +123,34 @@ export class ExpensesService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async totalExpenseMonth() {
+    const currentDate = new Date();
+    const startDateMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1,
+    );
+
+    const endDateMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0,
+    );
+    try {
+      const expenseTotal = await this.expenseRepository
+        .createQueryBuilder('expense')
+        .select('SUM(expense.value)', 'total')
+        .where('expense.date BETWEEN :start AND :end', {
+          start: startDateMonth,
+          end: endDateMonth,
+        })
+        .getRawOne();
+
+      return Number(expenseTotal.total).toFixed(2) || 0;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

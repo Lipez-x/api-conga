@@ -280,4 +280,55 @@ export class ReceivesService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async totalReceiveMonth() {
+    const currentDate = new Date();
+    const startDateMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1,
+    );
+
+    const endDateMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0,
+    );
+
+    try {
+      const expenseTotal = await this.receiveRepository
+        .createQueryBuilder('receive')
+        .select('SUM(receive.totalPrice)', 'total')
+        .where('receive.date BETWEEN :start AND :end', {
+          start: startDateMonth,
+          end: endDateMonth,
+        })
+        .getRawOne();
+
+      return Number(expenseTotal.total).toFixed(2) || 0;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async getReceiveDay() {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    try {
+      const totalDaily = await this.receiveRepository
+        .createQueryBuilder('receive')
+        .select('SUM(receive.totalPrice)', 'total')
+        .where('receive.date = :date', {
+          date: currentDate,
+        })
+        .getRawOne();
+
+      return Number(totalDaily.total).toFixed(2) || 0;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

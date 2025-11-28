@@ -60,15 +60,17 @@ export class ProductionsService {
       .leftJoin(`(${producerQuery})`, 'p', 'p.date = d.date')
       .orderBy('d.date', 'DESC');
 
-    if (dateFrom) query.andWhere('l.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('l.date <= :dateTo', { dateTo });
+    if (dateFrom) query.andWhere('d.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('d.date <= :dateTo', { dateTo });
     try {
+      const rows = await query.getRawMany();
+
+      const total = rows.length;
+
       const data = await query
         .offset((page - 1) * limit)
         .limit(limit)
         .getRawMany();
-
-      const total = data.length;
 
       return {
         total,

@@ -18,7 +18,7 @@ export class FilterProducerProductionDto {
 
   @IsString()
   @IsOptional()
-  producerName: string;
+  producerName?: string;
 
   @Type(() => Number)
   @IsNumber()
