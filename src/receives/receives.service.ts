@@ -54,7 +54,12 @@ export class ReceivesService {
         .take(limit)
         .getManyAndCount();
 
+      const average = await this.averageDaily();
+      const monthly = await this.totalReceiveMonth();
+
       return {
+        average,
+        monthly,
         total,
         page,
         limit,
@@ -296,7 +301,7 @@ export class ReceivesService {
     );
 
     try {
-      const expenseTotal = await this.receiveRepository
+      const receiveTotal = await this.receiveRepository
         .createQueryBuilder('receive')
         .select('SUM(receive.totalPrice)', 'total')
         .where('receive.date BETWEEN :start AND :end', {
@@ -305,7 +310,7 @@ export class ReceivesService {
         })
         .getRawOne();
 
-      return Number(expenseTotal.total).toFixed(2) || 0;
+      return Number(receiveTotal.total).toFixed(2) || 0;
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -330,5 +335,14 @@ export class ReceivesService {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
     }
+  }
+
+  async averageDaily() {
+    const average = await this.receiveRepository
+      .createQueryBuilder('receive')
+      .select('AVG(receive.totalPrice)', 'total')
+      .getRawOne();
+
+    return Number(average.total).toFixed(2);
   }
 }

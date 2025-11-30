@@ -15,6 +15,6 @@ export class ReceivesController {
 
   @Get()
   async findAll(@Query() filters: ReceivesFilterDto) {
-    return this.receivesService.findAll(filters);
+    return await this.receivesService.findAll(filters);
   }
 }
