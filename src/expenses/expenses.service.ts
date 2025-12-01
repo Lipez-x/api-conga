@@ -100,7 +100,14 @@ export class ExpensesService {
         .orderBy('date', 'DESC')
         .getRawMany();
 
-      return dailyExpenses;
+      return dailyExpenses.map((e) => ({
+        date: e.date,
+        total: Number(e.total),
+        personnel: Number(e.personnel),
+        utility: Number(e.utility),
+        supplies: Number(e.supplies),
+        operational: Number(e.operational),
+      }));
     } catch (error) {
       this.logger.error(error.message);
 
