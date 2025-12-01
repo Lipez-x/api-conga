@@ -32,16 +32,16 @@ export class FinancialReportService {
         limit: 1,
       });
 
-      const totalDespesa = Number(expensesData.total.toFixed(2));
+      const totalExpenses = Number(expensesData.total.toFixed(2));
 
-      const totalReceita = Number(receivesData.monthly);
+      const totalReceives = Number(receivesData.monthly);
 
-      const resultadoMensal = Number((totalReceita - totalDespesa).toFixed(2));
+      const periodResult = Number((totalReceives - totalExpenses).toFixed(2));
 
       return {
-        totalReceita,
-        totalDespesa,
-        resultadoMensal,
+        totalReceives,
+        totalExpenses,
+        periodResult,
       };
     } catch (error) {
       this.logger.error(error.message);
@@ -65,7 +65,7 @@ export class FinancialReportService {
     let totalLocalProduction = 0;
     let totalProducersProduction = 0;
 
-    productionsData.data.forEach((day) => {
+    productionsData.data.forEach((day: any) => {
       totalLocalProduction += Number(day.totalQuantity || 0);
       totalProducersProduction += Number(day.totalProducers || 0);
     });
