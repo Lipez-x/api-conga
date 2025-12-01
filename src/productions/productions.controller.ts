@@ -13,4 +13,9 @@ export class ProductionsController {
   async getDailyProduction(@Query() filters: GetDailyProductionDto) {
     return await this.productionsService.getDaily(filters);
   }
+
+  @Get('/monthly')
+  async getGroupedByMonth() {
+    return await this.productionsService.getGroupedByMonth();
+  }
 }
