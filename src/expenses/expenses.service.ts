@@ -81,7 +81,8 @@ export class ExpensesService {
 
     try {
       const dailyExpenses = await query
-        .select('expense.date', 'date')
+        .select(`to_char(expense.date, 'YYYY-MM-DD')`, 'date')
+        .addSelect('COALESCE(SUM(expense.value), 0)', 'total')
         .addSelect(
           `COALESCE(SUM(expense.value) FILTER (WHERE expense.category = 'PERSONNEL'), 0)`,
           'personnel',
@@ -98,7 +99,7 @@ export class ExpensesService {
           `COALESCE(SUM(expense.value) FILTER (WHERE expense.category = 'OPERATIONAL'),0)`,
           'operational',
         )
-        .groupBy('expense.date')
+        .groupBy(`to_char(expense.date, 'YYYY-MM-DD')`)
         .orderBy('date', 'DESC')
         .getRawMany();
 

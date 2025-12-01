@@ -24,4 +24,9 @@ export class FinancialReportController {
   async getDetailedReport(@Query() filters: FinancialReportFilterDto) {
     return await this.financialReportService.getDetailedReport(filters);
   }
+
+  @Get('/daily')
+  async getDaily(@Query() filters: FinancialReportFilterDto) {
+    return await this.financialReportService.getDaily(filters);
+  }
 }
