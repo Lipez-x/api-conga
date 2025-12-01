@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { FilterLocalProductionDto } from './dtos/filter-local-production.dto';
 import { ReceivesService } from 'src/receives/receives.service';
 import { UpdateLocalProductionDto } from './dtos/update-local-production.dto';
+import { LocalProductionPeriodFilter } from './dtos/filter-period-local-production.dto';
 
 @Injectable()
 export class LocalProductionService {
@@ -206,6 +207,32 @@ export class LocalProductionService {
         throw error;
       }
 
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async getGrouped(filters: LocalProductionPeriodFilter) {
+    const { dateFrom, dateTo } = filters;
+
+    const query =
+      this.localProductionRepository.createQueryBuilder('production');
+
+    if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
+
+    try {
+      const result = await query
+        .select('COALESCE(SUM(production.gross_quantity), 0)', 'grossQuantity')
+        .addSelect('COALESCE(SUM(consumed_quantity), 0)', 'consumedQuantity')
+        .addSelect(
+          'COALESCE(SUM(production.total_quantity), 0)',
+          'totalQuantity',
+        )
+        .getRawMany();
+
+      return result;
+    } catch (error) {
+      this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
     }
   }

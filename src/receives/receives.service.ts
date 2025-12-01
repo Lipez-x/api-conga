@@ -345,4 +345,23 @@ export class ReceivesService {
 
     return Number(average.total).toFixed(2);
   }
+
+  async getTotal(filters: ReceivesFilterDto) {
+    const query = this.receiveRepository.createQueryBuilder('receive');
+    const { dateFrom, dateTo } = filters;
+
+    if (dateFrom) query.andWhere('receive.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('receive.date <= :dateTo', { dateTo });
+
+    try {
+      const receivesSum = await query
+        .select('SUM(receive.totalPrice)', 'total')
+        .getRawOne();
+
+      return receivesSum;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

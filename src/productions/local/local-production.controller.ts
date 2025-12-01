@@ -17,6 +17,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
 import { FilterLocalProductionDto } from './dtos/filter-local-production.dto';
 import { UpdateLocalProductionDto } from './dtos/update-local-production.dto';
+import { LocalProductionPeriodFilter } from './dtos/filter-period-local-production.dto';
 
 @Roles(UserRole.ADMIN)
 @UsePipes(ValidationPipe)
@@ -54,5 +55,10 @@ export class LocalProductionController {
   @Delete('/:id')
   async delete(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.localProductionService.delete(id);
+  }
+
+  @Get('/grouped')
+  async getGrouped(@Query() filters: LocalProductionPeriodFilter) {
+    return await this.localProductionService.getGrouped(filters);
   }
 }

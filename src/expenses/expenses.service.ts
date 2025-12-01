@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Expense } from './entities/expense.entity';
 import { Repository } from 'typeorm';
 import { ExpensesFilter } from './dtos/expenses-filter.dto';
-import { ExpenseType } from './enums/expense-type.enum';
 import { ComparePeriodsDto } from './dtos/compare-periods.dto';
 
 @Injectable()
@@ -18,8 +17,6 @@ export class ExpensesService {
     @InjectRepository(Expense)
     private readonly expenseRepository: Repository<Expense>,
   ) {}
-
-  private format = (value: number) => Number(value.toFixed(2));
 
   async getGrouped(filters: ExpensesFilter) {
     const query = this.expenseRepository.createQueryBuilder('expense');
@@ -72,11 +69,17 @@ export class ExpensesService {
     }
   }
 
-  async getDaily() {
+  async getDaily(filters: ExpensesFilter) {
+    const query = this.expenseRepository.createQueryBuilder('expense');
+    const { dateFrom, dateTo } = filters;
+
+    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
+
     try {
-      const dailyExpenses = await this.expenseRepository
-        .createQueryBuilder('expense')
-        .select('expense.date', 'date')
+      const dailyExpenses = await query
+        .select(`to_char(expense.date, 'YYYY-MM-DD')`, 'date')
+        .addSelect('COALESCE(SUM(expense.value), 0)', 'total')
         .addSelect(
           `COALESCE(SUM(expense.value) FILTER (WHERE expense.category = 'PERSONNEL'), 0)`,
           'personnel',
@@ -93,11 +96,18 @@ export class ExpensesService {
           `COALESCE(SUM(expense.value) FILTER (WHERE expense.category = 'OPERATIONAL'),0)`,
           'operational',
         )
-        .groupBy('expense.date')
+        .groupBy(`to_char(expense.date, 'YYYY-MM-DD')`)
         .orderBy('date', 'DESC')
         .getRawMany();
 
-      return dailyExpenses;
+      return dailyExpenses.map((e) => ({
+        date: e.date,
+        total: Number(e.total),
+        personnel: Number(e.personnel),
+        utility: Number(e.utility),
+        supplies: Number(e.supplies),
+        operational: Number(e.operational),
+      }));
     } catch (error) {
       this.logger.error(error.message);
 

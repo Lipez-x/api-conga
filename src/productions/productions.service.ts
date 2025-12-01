@@ -119,4 +119,64 @@ export class ProductionsService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async getGroupedByMonth() {
+    try {
+      const localMonths = this.dataSource
+        .createQueryBuilder()
+        .select(`to_char(date_trunc('month', l.date), 'YYYY-MM')`, 'month')
+        .from(LocalProduction, 'l')
+        .groupBy(`date_trunc('month', l.date)`)
+        .getQuery();
+
+      const producerMonths = this.dataSource
+        .createQueryBuilder()
+        .select(`to_char(date_trunc('month', pp.date), 'YYYY-MM')`, 'month')
+        .from(ProducerProduction, 'pp')
+        .groupBy(`date_trunc('month', pp.date)`)
+        .getQuery();
+
+      const monthsUnion = `
+      (${localMonths})
+      UNION
+      (${producerMonths})
+    `;
+
+      const localSum = this.dataSource
+        .createQueryBuilder()
+        .select(`to_char(date_trunc('month', l.date), 'YYYY-MM')`, 'month')
+        .addSelect('SUM(l.total_quantity)', 'local_total')
+        .from(LocalProduction, 'l')
+        .groupBy(`date_trunc('month', l.date)`)
+        .getQuery();
+
+      const producerSum = this.dataSource
+        .createQueryBuilder()
+        .select(`to_char(date_trunc('month', pp.date), 'YYYY-MM')`, 'month')
+        .addSelect('SUM(pp.total_quantity)', 'producer_total')
+        .from(ProducerProduction, 'pp')
+        .groupBy(`date_trunc('month', pp.date)`)
+        .getQuery();
+
+      const result = await this.dataSource
+        .createQueryBuilder()
+        .select('m.month', 'month')
+        .addSelect('COALESCE(l.local_total, 0)', 'localTotal')
+        .addSelect('COALESCE(p.producer_total, 0)', 'producerTotal')
+        .addSelect(
+          `COALESCE(l.local_total, 0) + COALESCE(p.producer_total, 0)`,
+          'total',
+        )
+        .from(`(${monthsUnion})`, 'm')
+        .leftJoin(`(${localSum})`, 'l', 'l.month = m.month')
+        .leftJoin(`(${producerSum})`, 'p', 'p.month = m.month')
+        .orderBy('m.month', 'DESC')
+        .getRawMany();
+
+      return result;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

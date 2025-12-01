@@ -18,7 +18,7 @@ export class ExpensesController {
   }
 
   @Get('/daily')
-  async getGroupedByDay() {
-    return await this.expensesService.getDaily();
+  async getGroupedByDay(@Query() filters: ExpensesFilter) {
+    return await this.expensesService.getDaily(filters);
   }
 }
