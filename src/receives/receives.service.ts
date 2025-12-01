@@ -55,7 +55,7 @@ export class ReceivesService {
         .getManyAndCount();
 
       const average = await this.averageDaily();
-      const monthly = await this.totalReceiveMonth();
+      const monthly = await this.monthlyTotal();
 
       return {
         average,
@@ -286,7 +286,7 @@ export class ReceivesService {
     }
   }
 
-  async totalReceiveMonth() {
+  async monthlyTotal() {
     const currentDate = new Date();
     const startDateMonth = new Date(
       currentDate.getFullYear(),
@@ -301,7 +301,7 @@ export class ReceivesService {
     );
 
     try {
-      const receiveTotal = await this.receiveRepository
+      const receivesSum = await this.receiveRepository
         .createQueryBuilder('receive')
         .select('SUM(receive.totalPrice)', 'total')
         .where('receive.date BETWEEN :start AND :end', {
@@ -310,19 +310,19 @@ export class ReceivesService {
         })
         .getRawOne();
 
-      return Number(receiveTotal.total).toFixed(2) || 0;
+      return Number(receivesSum.total).toFixed(2) || 0;
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  async getReceiveDay() {
+  async getOfTheDay() {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
     try {
-      const totalDaily = await this.receiveRepository
+      const receivesSum = await this.receiveRepository
         .createQueryBuilder('receive')
         .select('SUM(receive.totalPrice)', 'total')
         .where('receive.date = :date', {
@@ -330,7 +330,7 @@ export class ReceivesService {
         })
         .getRawOne();
 
-      return Number(totalDaily.total).toFixed(2) || 0;
+      return Number(receivesSum.total).toFixed(2) || 0;
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);

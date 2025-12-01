@@ -21,10 +21,10 @@ export class AppService {
 
   async getDashboard() {
     try {
-      const dailyProduction = await this.productionService.getProductionDay();
-      const dailyReceive = await this.receivesService.getReceiveDay();
-      const monthlyExpense = await this.expensesService.totalExpenseMonth();
-      const monthlyReceive = await this.receivesService.totalReceiveMonth();
+      const dailyProduction = await this.productionService.getOfTheDay();
+      const dailyReceive = await this.receivesService.getOfTheDay();
+      const monthlyExpense = await this.expensesService.monthlyTotal();
+      const monthlyReceive = await this.receivesService.monthlyTotal();
 
       return {
         dailyProduction: Number(dailyProduction),

@@ -11,6 +11,6 @@ export class ProductionsController {
   constructor(private readonly productionsService: ProductionsService) {}
   @Get('/daily')
   async getDailyProduction(@Query() filters: GetDailyProductionDto) {
-    return await this.productionsService.getDailyProduction(filters);
+    return await this.productionsService.getDaily(filters);
   }
 }

@@ -12,7 +12,8 @@ import { ProducerProduction } from './producer/entities/producer-production.enti
 export class ProductionsService {
   private logger = new Logger(ProductionsService.name);
   constructor(private readonly dataSource: DataSource) {}
-  async getDailyProduction(filters: GetDailyProductionDto) {
+
+  async getDaily(filters: GetDailyProductionDto) {
     const { dateFrom, dateTo, page = 1, limit = 10 } = filters;
 
     const localQuery = this.dataSource
@@ -85,7 +86,7 @@ export class ProductionsService {
     }
   }
 
-  async getProductionDay() {
+  async getOfTheDay() {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 

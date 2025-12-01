@@ -9,11 +9,11 @@ export class ExpensesController {
 
   @Get()
   async getGroupedExpenses(@Query() filters: ExpensesFilter) {
-    return await this.expensesService.getGroupedExpenses(filters);
+    return await this.expensesService.getGrouped(filters);
   }
 
   @Get('/compare')
   async compareExpensesByPeriod(@Query() dto: ComparePeriodsDto) {
-    return await this.expensesService.compareExpensesByPeriod(dto);
+    return await this.expensesService.compareByPeriod(dto);
   }
 }

@@ -21,7 +21,7 @@ export class ExpensesService {
 
   private format = (value: number) => Number(value.toFixed(2));
 
-  async getGroupedExpenses(filters: ExpensesFilter) {
+  async getGrouped(filters: ExpensesFilter) {
     const query = this.expenseRepository.createQueryBuilder('expense');
     const { dateFrom, dateTo } = filters;
 
@@ -72,15 +72,15 @@ export class ExpensesService {
     }
   }
 
-  async compareExpensesByPeriod(dto: ComparePeriodsDto) {
+  async compareByPeriod(dto: ComparePeriodsDto) {
     const { dateFromOne, dateToOne, dateFromTwo, dateToTwo } = dto;
 
-    const periodOne = await this.getGroupedExpenses({
+    const periodOne = await this.getGrouped({
       dateFrom: dateFromOne,
       dateTo: dateToOne,
     });
 
-    const periodTwo = await this.getGroupedExpenses({
+    const periodTwo = await this.getGrouped({
       dateFrom: dateFromTwo,
       dateTo: dateToTwo,
     });
@@ -124,7 +124,7 @@ export class ExpensesService {
     }
   }
 
-  async totalExpenseMonth() {
+  async monthlyTotal() {
     const currentDate = new Date();
     const startDateMonth = new Date(
       currentDate.getFullYear(),
@@ -138,7 +138,7 @@ export class ExpensesService {
       0,
     );
     try {
-      const expenseTotal = await this.expenseRepository
+      const expenseSum = await this.expenseRepository
         .createQueryBuilder('expense')
         .select('SUM(expense.value)', 'total')
         .where('expense.date BETWEEN :start AND :end', {
@@ -147,7 +147,7 @@ export class ExpensesService {
         })
         .getRawOne();
 
-      return Number(expenseTotal.total).toFixed(2) || 0;
+      return Number(expenseSum.total).toFixed(2) || 0;
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
