@@ -1,11 +1,14 @@
-import { IsDateString, IsOptional } from 'class-validator';
+import { IsOptional, IsDateString } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class FinancialReportFilterDto {
   @IsOptional()
+  @Type(() => Date)
   @IsDateString()
-  dateFrom?: string;
+  dateFrom?: Date;
 
   @IsOptional()
+  @Type(() => Date)
   @IsDateString()
-  dateTo?: string;
+  dateTo?: Date;
 }
