@@ -8,6 +8,7 @@ import { ReceivesService } from '../receives/receives.service';
 import { ProductionsService } from '../productions/productions.service';
 import { FinancialReportFilterDto } from './dtos/financial-report-filter.dto';
 import { Receive } from 'src/receives/entities/receive.entity';
+import { ComparePeriodsDto } from './dtos/compare-periods-dto';
 
 @Injectable()
 export class FinancialReportService {
@@ -123,5 +124,36 @@ export class FinancialReportService {
     const merged = this.mergeFinancialData(dailyExpenses, dailyReceives);
 
     return merged;
+  }
+
+  private parsePeriod(period: String) {
+    const [year, month] = period.split('-').map(Number);
+
+    const dateFrom = new Date(year, month - 1, 1);
+    const dateTo = new Date(year, month, 0);
+
+    return { dateFrom, dateTo };
+  }
+
+  async compareByPeriod(dto: ComparePeriodsDto) {
+    const { periodOne, periodTwo } = dto;
+
+    const monthOne = this.parsePeriod(periodOne);
+    const monthTwo = this.parsePeriod(periodTwo);
+
+    const monthOneData = await this.getOverview({
+      dateFrom: monthOne.dateFrom,
+      dateTo: monthOne.dateTo,
+    });
+
+    const monthTwoData = await this.getOverview({
+      dateFrom: monthTwo.dateFrom,
+      dateTo: monthTwo.dateTo,
+    });
+
+    return {
+      monthOneData,
+      monthTwoData,
+    };
   }
 }

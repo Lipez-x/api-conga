@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Expense } from './entities/expense.entity';
 import { Repository } from 'typeorm';
 import { ExpensesFilter } from './dtos/expenses-filter.dto';
-import { ExpenseType } from './enums/expense-type.enum';
 import { ComparePeriodsDto } from './dtos/compare-periods.dto';
 
 @Injectable()
@@ -18,8 +17,6 @@ export class ExpensesService {
     @InjectRepository(Expense)
     private readonly expenseRepository: Repository<Expense>,
   ) {}
-
-  private format = (value: number) => Number(value.toFixed(2));
 
   async getGrouped(filters: ExpensesFilter) {
     const query = this.expenseRepository.createQueryBuilder('expense');
