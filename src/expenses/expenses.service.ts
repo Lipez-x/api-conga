@@ -72,6 +72,43 @@ export class ExpensesService {
     }
   }
 
+  async getDaily() {
+    try {
+      const dailyExpenses = await this.expenseRepository
+        .createQueryBuilder('expense')
+        .select('expense.date', 'date')
+        .addSelect(
+          `COALESCE(SUM(expense.value) FILTER (WHERE expense.category = 'PERSONNEL'), 0)`,
+          'personnel',
+        )
+        .addSelect(
+          `COALESCE(SUM(expense.value) FILTER (WHERE expense.category = 'UTILITY'), 0)`,
+          'utility',
+        )
+        .addSelect(
+          `COALESCE(SUM(expense.value) FILTER (WHERE expense.category = 'SUPPLIES'), 0)`,
+          'supplies',
+        )
+        .addSelect(
+          `COALESCE(SUM(expense.value) FILTER (WHERE expense.category = 'OPERATIONAL'),0)`,
+          'operational',
+        )
+        .groupBy('expense.date')
+        .orderBy('date', 'DESC')
+        .getRawMany();
+
+      return dailyExpenses;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   private parsePeriod(period: String) {
     const [year, month] = period.split('-').map(Number);
 

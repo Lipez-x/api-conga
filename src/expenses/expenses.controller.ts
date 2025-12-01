@@ -16,4 +16,9 @@ export class ExpensesController {
   async compareExpensesByPeriod(@Query() dto: ComparePeriodsDto) {
     return await this.expensesService.compareByPeriod(dto);
   }
+
+  @Get('/daily')
+  async getGroupedByDay() {
+    return await this.expensesService.getDaily();
+  }
 }
