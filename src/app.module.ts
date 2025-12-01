@@ -28,6 +28,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { ReceivesModule } from './receives/receives.module';
 import { Receive } from './receives/entities/receive.entity';
 import { ProducerProductionRequest } from './productions/producer/entities/producer-production-request.entity';
+import { FinancialReportModule } from './financial-report/financial-report.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { ProducerProductionRequest } from './productions/producer/entities/produ
     ProductionsModule,
     SalePriceModule,
     ReceivesModule,
+    FinancialReportModule,
   ],
   controllers: [AppController],
   providers: [
