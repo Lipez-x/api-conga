@@ -1,19 +1,11 @@
-import { IsOptional, IsDateString } from 'class-validator';
+import { IsString, Matches } from 'class-validator';
 
 export class ComparePeriodsDto {
-  @IsOptional()
-  @IsDateString()
-  dateFromOne: Date;
+  @IsString()
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/)
+  periodOne: string;
 
-  @IsOptional()
-  @IsDateString()
-  dateToOne: Date;
-
-  @IsOptional()
-  @IsDateString()
-  dateFromTwo: Date;
-
-  @IsOptional()
-  @IsDateString()
-  dateToTwo: Date;
+  @IsString()
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/)
+  periodTwo: string;
 }

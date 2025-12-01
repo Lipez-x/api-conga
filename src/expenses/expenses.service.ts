@@ -72,41 +72,34 @@ export class ExpensesService {
     }
   }
 
+  private parsePeriod(period: String) {
+    const [year, month] = period.split('-').map(Number);
+
+    const dateFrom = new Date(year, month - 1, 1);
+    const dateTo = new Date(year, month, 0);
+
+    return { dateFrom, dateTo };
+  }
+
   async compareByPeriod(dto: ComparePeriodsDto) {
-    const { dateFromOne, dateToOne, dateFromTwo, dateToTwo } = dto;
+    const { periodOne, periodTwo } = dto;
 
-    const periodOne = await this.getGrouped({
-      dateFrom: dateFromOne,
-      dateTo: dateToOne,
+    const monthOne = this.parsePeriod(periodOne);
+    const monthTwo = this.parsePeriod(periodTwo);
+
+    const monthOneData = await this.getGrouped({
+      dateFrom: monthOne.dateFrom,
+      dateTo: monthOne.dateTo,
     });
 
-    const periodTwo = await this.getGrouped({
-      dateFrom: dateFromTwo,
-      dateTo: dateToTwo,
+    const monthTwoData = await this.getGrouped({
+      dateFrom: monthTwo.dateFrom,
+      dateTo: monthTwo.dateTo,
     });
-
-    const difference = {
-      total: this.format(periodOne.total - periodTwo.total),
-      categories: {
-        PERSONNEL: this.format(
-          periodOne.categories.PERSONNEL - periodTwo.categories.PERSONNEL,
-        ),
-        UTILITY: this.format(
-          periodOne.categories.UTILITY - periodTwo.categories.UTILITY,
-        ),
-        SUPPLIES: this.format(
-          periodOne.categories.SUPPLIES - periodTwo.categories.SUPPLIES,
-        ),
-        OPERATIONAL: this.format(
-          periodOne.categories.OPERATIONAL - periodTwo.categories.OPERATIONAL,
-        ),
-      },
-    };
 
     return {
-      periodOne,
-      periodTwo,
-      difference,
+      monthOneData,
+      monthTwoData,
     };
   }
 
