@@ -71,12 +71,12 @@ export class FinancialReportService {
     const totalProduction = totalLocalProduction + totalProducersProduction;
 
     return {
-      personnelCosts: Number(expensesData.categories.PERSONNEL.toFixed(2)),
+      personnel: Number(expensesData.categories.PERSONNEL.toFixed(2)),
+      utility: Number(expensesData.categories.UTILITY.toFixed(2)),
       supplies: Number(expensesData.categories.SUPPLIES.toFixed(2)),
-      utilities: Number(expensesData.categories.UTILITY.toFixed(2)),
       operational: Number(expensesData.categories.OPERATIONAL.toFixed(2)),
       localProduction: Number(totalLocalProduction.toFixed(2)),
-      producersProduction: Number(totalProducersProduction.toFixed(2)),
+      producerProduction: Number(totalProducersProduction.toFixed(2)),
       totalProduction: Number(totalProduction.toFixed(2)),
     };
   }
