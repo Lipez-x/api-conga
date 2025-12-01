@@ -25,16 +25,14 @@ export class FinancialReportService {
         dateTo: filters.dateTo,
       });
 
-      const receivesData = await this.receivesService.findAll({
+      const receivesData = await this.receivesService.getTotal({
         dateFrom: filters.dateFrom,
         dateTo: filters.dateTo,
-        page: 1,
-        limit: 1,
       });
 
       const totalExpenses = Number(expensesData.total.toFixed(2));
 
-      const totalReceives = Number(receivesData.monthly);
+      const totalReceives = Number(receivesData.total);
 
       const periodResult = Number((totalReceives - totalExpenses).toFixed(2));
 
