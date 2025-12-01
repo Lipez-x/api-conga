@@ -3,10 +3,12 @@ import { FinancialReportController } from './financial-report.controller';
 import { FinancialReportService } from './financial-report.service';
 import { ExpensesModule } from 'src/expenses/expenses.module';
 import { ReceivesModule } from 'src/receives/receives.module';
+import { ProductionsModule } from 'src/productions/productions.module';
 
 @Module({
-  imports: [ExpensesModule, ReceivesModule],
+  imports: [ExpensesModule, ReceivesModule, ProductionsModule],
   controllers: [FinancialReportController],
   providers: [FinancialReportService],
+  exports: [FinancialReportService],
 })
 export class FinancialReportModule {}

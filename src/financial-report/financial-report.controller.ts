@@ -19,4 +19,9 @@ export class FinancialReportController {
   async getOverview(@Query() filters: FinancialReportFilterDto) {
     return await this.financialReportService.getOverview(filters);
   }
+
+  @Get('detailed')
+  async getDetailedReport(@Query() filters: FinancialReportFilterDto) {
+    return await this.financialReportService.getDetailedReport(filters);
+  }
 }
