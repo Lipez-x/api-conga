@@ -72,10 +72,15 @@ export class ExpensesService {
     }
   }
 
-  async getDaily() {
+  async getDaily(filters: ExpensesFilter) {
+    const query = this.expenseRepository.createQueryBuilder('expense');
+    const { dateFrom, dateTo } = filters;
+
+    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
+
     try {
-      const dailyExpenses = await this.expenseRepository
-        .createQueryBuilder('expense')
+      const dailyExpenses = await query
         .select('expense.date', 'date')
         .addSelect(
           `COALESCE(SUM(expense.value) FILTER (WHERE expense.category = 'PERSONNEL'), 0)`,
