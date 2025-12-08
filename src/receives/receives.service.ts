@@ -359,9 +359,26 @@ export class ReceivesService {
   }
 
   async averageDaily() {
+    const currentDate = new Date();
+    const startDateMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1,
+    );
+
+    const endDateMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0,
+    );
+
     const average = await this.receiveRepository
       .createQueryBuilder('receive')
       .select('AVG(receive.totalPrice)', 'total')
+      .where('receive.date BETWEEN :start AND :end', {
+        start: startDateMonth,
+        end: endDateMonth,
+      })
       .getRawOne();
 
     return Number(average.total).toFixed(2);
