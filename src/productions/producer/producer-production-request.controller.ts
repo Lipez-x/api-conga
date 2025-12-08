@@ -21,6 +21,7 @@ import { RequestStatus } from './enums/request-status.enum';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 
 @Controller('productions/producer/requests')
+@UsePipes(ValidationPipe)
 export class ProducerProductionRequestController {
   constructor(
     private readonly producerProductionRequestService: ProducerProductionRequestService,
