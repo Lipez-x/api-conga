@@ -127,6 +127,27 @@ export class PersonnelCostService {
     }
   }
 
+  async findLast() {
+    try {
+      const lastCost = await this.personnelCostRepository
+        .createQueryBuilder('cost')
+        .leftJoinAndSelect('cost.expense', 'expense')
+        .orderBy('expense.date', 'DESC')
+        .limit(1)
+        .getOne();
+
+      return lastCost;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async update(id: string, updatePersonnelCostDto: UpdatePersonnelCostDto) {
     try {
       const personnelCost = await this.personnelCostRepository.findOne({

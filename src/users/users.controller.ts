@@ -29,7 +29,7 @@ export class UsersController {
 
   constructor(private readonly usersService: UsersService) {}
 
-  @IsPublic()
+  //@IsPublic()
   @Post('/register')
   @UsePipes(ValidationPipe)
   async register(@Body() registerUserDto: RegisterUserDto) {

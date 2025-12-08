@@ -126,6 +126,27 @@ export class OperationalCostService {
     }
   }
 
+  async findLast() {
+    try {
+      const lastCost = await this.operationalCostRepository
+        .createQueryBuilder('cost')
+        .leftJoinAndSelect('cost.expense', 'expense')
+        .orderBy('expense.date', 'DESC')
+        .limit(1)
+        .getOne();
+
+      return lastCost;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async update(id: string, updateOperationalCostDto: UpdateOperationalCostDto) {
     try {
       const operationalCost = await this.operationalCostRepository.findOne({
