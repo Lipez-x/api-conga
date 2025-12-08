@@ -23,7 +23,6 @@ export class ProducerProductionService {
   constructor(
     @InjectRepository(ProducerProduction)
     private readonly producerProductionRepository: Repository<ProducerProduction>,
-    @InjectRepository(ProducerProductionRequest)
     private readonly receivesService: ReceivesService,
   ) {}
 
