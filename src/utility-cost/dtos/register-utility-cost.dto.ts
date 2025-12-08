@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Min,
 } from 'class-validator';
@@ -27,6 +28,6 @@ export class RegisterUtilityCostDto {
   value: number;
 
   @IsString()
-  @IsNotEmpty()
-  observations: string;
+  @IsOptional()
+  observations?: string;
 }

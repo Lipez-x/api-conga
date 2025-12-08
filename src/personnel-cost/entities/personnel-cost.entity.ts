@@ -24,6 +24,6 @@ export class PersonnelCost {
   @Column({ type: 'enum', enum: CostType })
   type: CostType;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   description: string;
 }
