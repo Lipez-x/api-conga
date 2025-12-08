@@ -8,9 +8,9 @@ export class SalePrice {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   value: number;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'date' })
   startDate: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'date' })
   endDate: Date;
 }
