@@ -135,6 +135,27 @@ export class SuppliesService {
     }
   }
 
+  async findLast() {
+    try {
+      const lastSupply = await this.suppliesRepository
+        .createQueryBuilder('supplies')
+        .leftJoinAndSelect('supplies.expense', 'expense')
+        .orderBy('expense.date', 'DESC')
+        .limit(1)
+        .getOne();
+
+      return lastSupply;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async update(id: string, updateSuppliesDto: UpdateSuppliesDto) {
     try {
       const supply = await this.suppliesRepository.findOne({

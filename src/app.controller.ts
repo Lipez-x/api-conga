@@ -9,4 +9,9 @@ export class AppController {
   async getHello() {
     return await this.appService.getDashboard();
   }
+
+  @Get('/records')
+  async getRecords() {
+    return await this.appService.getRecords();
+  }
 }

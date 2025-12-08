@@ -9,5 +9,6 @@ import { ExpensesModule } from 'src/expenses/expenses.module';
   imports: [TypeOrmModule.forFeature([Supplies]), ExpensesModule],
   controllers: [SuppliesController],
   providers: [SuppliesService],
+  exports: [SuppliesService],
 })
 export class SuppliesModule {}

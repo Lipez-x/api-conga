@@ -10,12 +10,11 @@ import {
 import { RegisterProducerProductionDto } from './dtos/register-producer-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProducerProduction } from './entities/producer-production.entity';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { ReceivesService } from 'src/receives/receives.service';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 import { ProducerProductionRequest } from './entities/producer-production-request.entity';
-import { RequestStatus } from './enums/request-status.enum';
 
 @Injectable()
 export class ProducerProductionService {
@@ -25,7 +24,6 @@ export class ProducerProductionService {
     @InjectRepository(ProducerProduction)
     private readonly producerProductionRepository: Repository<ProducerProduction>,
     @InjectRepository(ProducerProductionRequest)
-    private readonly producerProductionRequestRepository: Repository<ProducerProductionRequest>,
     private readonly receivesService: ReceivesService,
   ) {}
 
@@ -111,6 +109,26 @@ export class ProducerProductionService {
       }
 
       return producerProduction;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async findLast() {
+    try {
+      const lastProduction = await this.producerProductionRepository
+        .createQueryBuilder('production')
+        .orderBy('date', 'DESC')
+        .limit(1)
+        .getOne();
+
+      return lastProduction;
     } catch (error) {
       this.logger.error(error.message);
 
