@@ -6,6 +6,7 @@ import {
   IsString,
   Min,
 } from 'class-validator';
+import { IsNotFutureDate } from 'src/common/validators/not-future-date.validator';
 
 export class UpdateSuppliesDto {
   @IsString()
@@ -13,6 +14,7 @@ export class UpdateSuppliesDto {
   name?: string;
 
   @IsDateString()
+  @IsNotFutureDate({ message: 'A data não pode ser maior que a data atual' })
   @IsOptional()
   date?: Date;
 

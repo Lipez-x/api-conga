@@ -6,11 +6,11 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { RequestStatus } from '../enums/request-status.enum';
-import { IsNull } from 'typeorm';
+import { IsNotFutureDate } from 'src/common/validators/not-future-date.validator';
 
 export class UpdateProducerProductionDto {
   @IsDateString()
+  @IsNotFutureDate({ message: 'A data não pode ser maior que a data atual' })
   @IsOptional()
   date: Date;
 

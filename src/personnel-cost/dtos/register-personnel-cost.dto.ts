@@ -8,6 +8,7 @@ import {
 } from 'class-validator';
 import { CostType } from '../enums/cost-type.enum';
 import { Type } from 'class-transformer';
+import { IsNotFutureDate } from 'src/common/validators/not-future-date.validator';
 
 export class RegisterPersonnelCostDto {
   @IsEnum(CostType)
@@ -15,6 +16,7 @@ export class RegisterPersonnelCostDto {
   type: CostType;
 
   @IsDateString()
+  @IsNotFutureDate({ message: 'A data não pode ser maior que a data atual' })
   @IsNotEmpty()
   date: Date;
 
