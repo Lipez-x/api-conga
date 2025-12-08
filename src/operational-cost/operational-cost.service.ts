@@ -54,7 +54,8 @@ export class OperationalCostService {
 
     const query = this.operationalCostRepository
       .createQueryBuilder('cost')
-      .leftJoinAndSelect('cost.expense', 'expense');
+      .leftJoinAndSelect('cost.expense', 'expense')
+      .orderBy('expense.date', 'DESC');
 
     if (type) query.andWhere('cost.type = :type', { type });
     if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });

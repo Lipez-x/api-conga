@@ -56,7 +56,8 @@ export class SuppliesService {
 
     const query = this.suppliesRepository
       .createQueryBuilder('supplies')
-      .leftJoinAndSelect('supplies.expense', 'expense');
+      .leftJoinAndSelect('supplies.expense', 'expense')
+      .orderBy('expense.date', 'DESC');
 
     if (name)
       query.andWhere('supplies.name ILIKE :name', { name: `%${name}%` });

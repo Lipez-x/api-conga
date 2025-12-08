@@ -57,8 +57,9 @@ export class ProducerProductionService {
       limit = 10,
     } = filters;
 
-    const query =
-      this.producerProductionRepository.createQueryBuilder('production');
+    const query = this.producerProductionRepository
+      .createQueryBuilder('production')
+      .orderBy('production.date', 'DESC');
 
     if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
     if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
