@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -8,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { SalePrice } from './entities/sale-price-entity';
 import { NewSalePriceDto } from './dtos/new-sale-price.dto';
+import { ReceivesService } from 'src/receives/receives.service';
 
 @Injectable()
 export class SalePriceService {
@@ -16,6 +19,8 @@ export class SalePriceService {
   constructor(
     @InjectRepository(SalePrice)
     private readonly salePriceRepository: Repository<SalePrice>,
+    @Inject(forwardRef(() => ReceivesService))
+    private readonly receivesService: ReceivesService,
   ) {}
 
   async save(newSalePriceDto: NewSalePriceDto) {
@@ -28,8 +33,12 @@ export class SalePriceService {
     if (activeSalePrice) {
       const endDate = new Date();
 
-      activeSalePrice.endDate = endDate;
-      await this.salePriceRepository.save(activeSalePrice);
+      if ((activeSalePrice.startDate = endDate)) {
+        await this.salePriceRepository.delete(activeSalePrice);
+      } else {
+        activeSalePrice.endDate = endDate;
+        await this.salePriceRepository.save(activeSalePrice);
+      }
     }
 
     try {
@@ -40,6 +49,10 @@ export class SalePriceService {
       });
 
       await this.salePriceRepository.save(salePrice);
+      await this.receivesService.updateSalePrice(
+        salePrice.startDate,
+        salePrice.value,
+      );
 
       const date = salePrice.startDate.toLocaleDateString('pt-BR');
       const time = salePrice.startDate.toTimeString();

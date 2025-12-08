@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -18,6 +20,7 @@ export class ReceivesService {
   constructor(
     @InjectRepository(Receive)
     private readonly receiveRepository: Repository<Receive>,
+    @Inject(forwardRef(() => SalePriceService))
     private readonly salePriceService: SalePriceService,
   ) {}
 
@@ -166,6 +169,24 @@ export class ReceivesService {
 
       if (error instanceof NotFoundException) {
         throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async updateSalePrice(date: Date, value: number) {
+    try {
+      const receive = await this.findByDate(date);
+
+      receive.salePrice = value;
+
+      await this.receiveRepository.save(receive);
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        return;
       }
 
       throw new InternalServerErrorException(error.message);
