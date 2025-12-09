@@ -9,6 +9,11 @@ import { ProductionsService } from '../productions/productions.service';
 import { FinancialReportFilterDto } from './dtos/financial-report-filter.dto';
 import { Receive } from 'src/receives/entities/receive.entity';
 import { ComparePeriodsDto } from './dtos/compare-periods-dto';
+import { join } from 'path';
+import { readFileSync } from 'fs';
+import Handlebars from 'handlebars';
+import { PdfService } from './financial-report-pdf.service';
+import { registerHandlebarsHelpers } from 'src/common/helpers/handlebars.helpers';
 
 @Injectable()
 export class FinancialReportService {
@@ -18,7 +23,10 @@ export class FinancialReportService {
     private readonly expensesService: ExpensesService,
     private readonly receivesService: ReceivesService,
     private readonly productionsService: ProductionsService,
-  ) {}
+    private readonly pdfService: PdfService,
+  ) {
+    registerHandlebarsHelpers();
+  }
 
   async getOverview(filters: FinancialReportFilterDto) {
     try {
@@ -155,5 +163,46 @@ export class FinancialReportService {
       monthOneData,
       monthTwoData,
     };
+  }
+
+  private loadTemplate(filename: string) {
+    const filePath = join(
+      process.cwd(),
+      'src',
+      'financial-report',
+      'templates',
+      filename,
+    );
+    return readFileSync(filePath, 'utf-8');
+  }
+
+  async generatePdf(filters: FinancialReportFilterDto) {
+    try {
+      const { dateFrom, dateTo } = filters;
+      const htmlTemplate = this.loadTemplate('financial-report.hbs');
+      const template = Handlebars.compile(htmlTemplate);
+      const logoPath = join(
+        process.cwd(),
+        'src/financial-report/templates/logo-conga.png',
+      );
+
+      const logoBase64 = readFileSync(logoPath, 'base64');
+
+      const generatedAt = new Date();
+
+      const html = template({
+        logoBase64,
+        period: { dateFrom, dateTo },
+        generatedAt,
+        overview: await this.getOverview(filters),
+        detail: await this.getDetailedReport(filters),
+        daily: await this.getDaily(filters),
+      });
+
+      return this.pdfService.generatePdf(html);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException();
+    }
   }
 }
