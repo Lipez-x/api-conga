@@ -34,6 +34,10 @@ import { ProducerProductionRequestController } from './producer/producer-product
     ProductionsService,
     ProducerProductionRequestService,
   ],
-  exports: [ProductionsService, ProducerProductionService],
+  exports: [
+    ProductionsService,
+    LocalProductionService,
+    ProducerProductionService,
+  ],
 })
 export class ProductionsModule {}
