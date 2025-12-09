@@ -331,27 +331,18 @@
               <tr>
                 <td>Produção de Leite Local</td>
                 <td>Receitas</td>
-                <td style='text-align: right;'>{{decimal
+                <td style='text-align: right;'>{{money
                     detail.localProduction
                   }}
-                  L</td>
+                  </td>
               </tr>
               <tr>
                 <td>Produção dos Produtores</td>
                 <td>Receitas</td>
-                <td style='text-align: right;'>{{decimal
+                <td style='text-align: right;'>{{money
                     detail.producerProduction
                   }}
-                  L</td>
-              </tr>
-              <tr>
-                <td>Produção Total do Tanque</td>
-                <td>Receitas</td>
-                <td style='text-align: right;'>{{sum
-                    detail.producerProduction
-                    detail.localProduction
-                  }}
-                  L</td>
+                  </td>
               </tr>
             </tbody>
           </table>
