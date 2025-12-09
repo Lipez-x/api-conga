@@ -217,4 +217,25 @@ export class ProducerProductionService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async getTotal(filters: FilterProducerProductionDto) {
+    const query = this.producerProductionRepository
+      .createQueryBuilder('production')
+      .leftJoinAndSelect('production.receive', 'receive');
+    const { dateFrom, dateTo } = filters;
+
+    if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
+
+    try {
+      const producerReceive = await query
+        .select('SUM(production.total_quantity * receive.sale_price)', 'total')
+        .getRawOne();
+
+      return Number(producerReceive.total);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

@@ -14,6 +14,9 @@ import { readFileSync } from 'fs';
 import Handlebars from 'handlebars';
 import { PdfService } from './financial-report-pdf.service';
 import { registerHandlebarsHelpers } from 'src/common/helpers/handlebars.helpers';
+import { LocalProductionService } from 'src/productions/local/local-production.service';
+import { ProducerProduction } from 'src/productions/producer/entities/producer-production.entity';
+import { ProducerProductionService } from 'src/productions/producer/producer-production.service';
 
 @Injectable()
 export class FinancialReportService {
@@ -22,7 +25,8 @@ export class FinancialReportService {
   constructor(
     private readonly expensesService: ExpensesService,
     private readonly receivesService: ReceivesService,
-    private readonly productionsService: ProductionsService,
+    private readonly localProductionService: LocalProductionService,
+    private readonly producerProductionService: ProducerProductionService,
     private readonly pdfService: PdfService,
   ) {
     registerHandlebarsHelpers();
@@ -64,31 +68,24 @@ export class FinancialReportService {
         dateTo: filters.dateTo,
       });
 
-      const productionsData = await this.productionsService.getDaily({
+      const localReceivesData = await this.localProductionService.getTotal({
         dateFrom: filters.dateFrom,
         dateTo: filters.dateTo,
-        page: 1,
-        limit: 999999,
       });
 
-      let totalLocalProduction = 0;
-      let totalProducersProduction = 0;
-
-      productionsData.data.forEach((day: any) => {
-        totalLocalProduction += Number(day.totalQuantity || 0);
-        totalProducersProduction += Number(day.totalProducers || 0);
-      });
-
-      const totalProduction = totalLocalProduction + totalProducersProduction;
+      const producerReceivesData =
+        await this.producerProductionService.getTotal({
+          dateFrom: filters.dateFrom,
+          dateTo: filters.dateTo,
+        });
 
       return {
         personnel: Number(expensesData.categories.PERSONNEL.toFixed(2)),
         utility: Number(expensesData.categories.UTILITY.toFixed(2)),
         supplies: Number(expensesData.categories.SUPPLIES.toFixed(2)),
         operational: Number(expensesData.categories.OPERATIONAL.toFixed(2)),
-        localProduction: Number(totalLocalProduction.toFixed(2)),
-        producerProduction: Number(totalProducersProduction.toFixed(2)),
-        totalProduction: Number(totalProduction.toFixed(2)),
+        localProduction: Number(localReceivesData.toFixed(2)),
+        producerProduction: Number(producerReceivesData.toFixed(2)),
       };
     } catch (error) {
       this.logger.error(error.message);
