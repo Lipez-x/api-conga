@@ -75,6 +75,7 @@ export class SalePriceService {
           startDate: LessThanOrEqual(date),
           endDate: MoreThanOrEqual(date),
         },
+        order: { endDate: 'DESC' },
       });
 
       return salePrice;
