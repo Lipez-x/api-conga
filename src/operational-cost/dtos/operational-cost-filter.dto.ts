@@ -19,7 +19,6 @@ export class OperationalCostFilterDto {
   dateFrom?: Date;
 
   @IsOptional()
-  @Type(() => Number)
   @IsDateString()
   dateTo?: Date;
 
