@@ -73,9 +73,10 @@ export function registerHandlebarsHelpers() {
     ];
 
     const format = (d: Date) => {
+      const year = String(d.getFullYear());
       const day = String(d.getDate()).padStart(2, '0');
       const month = monthAbbr[d.getMonth()];
-      return `${day} de ${month}`;
+      return `${day} de ${month} de ${year}`;
     };
 
     return `${format(f)} - ${format(t)}`;
