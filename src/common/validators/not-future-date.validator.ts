@@ -16,7 +16,13 @@ export function IsNotFutureDate(validationOptions: ValidationOptions) {
           if (!value) return false;
           const date = new Date(value);
           const now = new Date();
-          return date <= now;
+          const nowDate = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+          );
+
+          return date <= nowDate;
         },
         defaultMessage(args: ValidationArguments) {
           return `${args.property} não pode ser uma data futura`;
