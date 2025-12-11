@@ -14,7 +14,6 @@ import * as bcrypt from 'bcrypt';
 import { UserFilterDto } from './dtos/user-filter.dto';
 import { UserRole } from './enums/user-role.enum';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { use } from 'passport';
 
 @Injectable()
 export class UsersService {
