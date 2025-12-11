@@ -31,14 +31,11 @@ export class SalePriceService {
     });
 
     if (activeSalePrice) {
-      const endDate = new Date();
+      const now = new Date().toLocaleDateString().split('T')[0];
+      const endDate = new Date(now);
 
-      if ((activeSalePrice.startDate = endDate)) {
-        await this.salePriceRepository.delete(activeSalePrice);
-      } else {
-        activeSalePrice.endDate = endDate;
-        await this.salePriceRepository.save(activeSalePrice);
-      }
+      activeSalePrice.endDate = endDate;
+      await this.salePriceRepository.save(activeSalePrice);
     }
 
     try {
