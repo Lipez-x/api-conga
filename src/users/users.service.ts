@@ -26,7 +26,12 @@ export class UsersService {
   async register(registerUserDto: RegisterUserDto) {
     const { name, username, role, password, confirmPassword } = registerUserDto;
 
-    if (password != confirmPassword) {
+    const finalPassword = password ? password : process.env.DEFAULT_PASSWORD;
+    const finalConfirmPassword = confirmPassword
+      ? confirmPassword
+      : process.env.DEFAULT_PASSWORD;
+
+    if (!finalPassword || finalPassword !== finalConfirmPassword) {
       throw new BadRequestException('A senha não foi confirmada corretamente');
     }
 
@@ -41,7 +46,7 @@ export class UsersService {
     }
 
     const salt = await bcrypt.genSalt(12);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(finalPassword, salt);
 
     try {
       const createUser = this.userRepository.create({
