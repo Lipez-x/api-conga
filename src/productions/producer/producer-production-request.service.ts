@@ -36,9 +36,7 @@ export class ProducerProductionRequestService {
         now.getDate(),
       );
       limitDate.setDate(limitDate.getDate() - 1);
-
-      console.log(date, limitDate);
-
+      
       if (date > limitDate) {
         return await this.producerProductionService.register(
           registerProducerProductionDto,
