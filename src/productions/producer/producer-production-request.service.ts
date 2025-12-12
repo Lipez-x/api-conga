@@ -28,8 +28,16 @@ export class ProducerProductionRequestService {
     try {
       const date = new Date(registerProducerProductionDto.date);
 
-      const limitDate = new Date();
-      limitDate.setDate(limitDate.getDate() - 2);
+      const now = new Date();
+
+      const limitDate = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+      );
+      limitDate.setDate(limitDate.getDate() - 1);
+
+      console.log(date, limitDate);
 
       if (date > limitDate) {
         return await this.producerProductionService.register(

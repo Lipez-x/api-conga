@@ -39,8 +39,6 @@ export class SalePriceService {
         now.getDate(),
       );
 
-      console.log(endDate);
-
       activeSalePrice.endDate = endDate;
       await this.salePriceRepository.save(activeSalePrice);
     }
