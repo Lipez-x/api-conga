@@ -31,8 +31,15 @@ export class SalePriceService {
     });
 
     if (activeSalePrice) {
-      const now = new Date().toLocaleDateString().split('T')[0];
-      const endDate = new Date(now);
+      const now = new Date();
+
+      const endDate = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+      );
+
+      console.log(endDate);
 
       activeSalePrice.endDate = endDate;
       await this.salePriceRepository.save(activeSalePrice);
