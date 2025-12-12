@@ -24,6 +24,34 @@ export class ReceivesService {
     private readonly salePriceService: SalePriceService,
   ) {}
 
+  async getDaily(filters: ReceivesFilterDto) {
+    const query = this.receiveRepository.createQueryBuilder('receive');
+    const { dateFrom, dateTo } = filters;
+
+    if (dateFrom) query.andWhere('receive.date >= :dateFrom', { dateFrom });
+    if (dateTo) query.andWhere('receive.date <= :dateTo', { dateTo });
+
+    try {
+      const dailyReceives = await query
+        .select(`to_char(receive.date, 'YYYY-MM-DD')`, 'date')
+        .addSelect('receive.totalPrice', 'totalPrice')
+        .getRawMany();
+
+      return dailyReceives.map((r) => ({
+        date: r.date,
+        totalPrice: Number(r.totalPrice),
+      }));
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async findAll(filters: ReceivesFilterDto) {
     const {
       dateFrom,

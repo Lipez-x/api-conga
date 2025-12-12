@@ -93,7 +93,7 @@ export class FinancialReportService {
     }
   }
 
-  private mergeFinancialData(expenses: any[], receives: Receive[]) {
+  private mergeFinancialData(expenses: any[], receives: any[]) {
     const map = new Map();
 
     expenses.forEach((d) => {
@@ -125,7 +125,8 @@ export class FinancialReportService {
 
   async getDaily(filters: FinancialReportFilterDto) {
     const dailyExpenses = await this.expensesService.getDaily(filters);
-    const dailyReceives = (await this.receivesService.findAll(filters)).data;
+    const dailyReceives = await this.receivesService.getDaily(filters);
+
     const merged = this.mergeFinancialData(dailyExpenses, dailyReceives);
 
     return merged;
