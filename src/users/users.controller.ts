@@ -53,7 +53,7 @@ export class UsersController {
   }
 
   @Put('/:id')
-  @UsePipes(ValidationPipe)
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   @UseInterceptors(CheckCollaboratorInterceptor, UserMatchInterceptor)
   async updateCollaborator(
     @CurrentUser() _user: User,

@@ -111,7 +111,7 @@ export class UsersService {
     });
   }
 
-  async updatePassword(password: string, confirmPassword: string) {
+  async updatePassword(password?: string, confirmPassword?: string) {
     if (!password) return;
     if (password !== confirmPassword) {
       throw new BadRequestException('A senha não foi confirmada corretamente');

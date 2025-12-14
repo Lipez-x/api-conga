@@ -1,5 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import type { User } from './auth/interfaces/user.interface';
+import { CurrentUser } from './common/decorators/current-user.decorator';
 
 @Controller()
 export class AppController {
