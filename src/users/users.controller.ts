@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Logger,
   Param,
   ParseUUIDPipe,
   Post,
@@ -24,6 +23,7 @@ import { UserMatchInterceptor } from 'src/common/interceptors/user-match.interce
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from './entities/user.entity';
 import { UserResponseDto } from './dtos/user-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @UsePipes(ValidationPipe)
 @Controller('users')
@@ -35,7 +35,8 @@ export class UsersController {
   async register(
     @Body() registerUserDto: RegisterUserDto,
   ): Promise<UserResponseDto> {
-    return this.usersService.register(registerUserDto);
+    const user = this.usersService.register(registerUserDto);
+    return plainToInstance(UserResponseDto, user);
   }
 
   @Roles(UserRole.ADMIN)
@@ -54,7 +55,8 @@ export class UsersController {
   async findById(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<UserResponseDto> {
-    return await this.usersService.findById(id);
+    const user = await this.usersService.findById(id);
+    return plainToInstance(UserResponseDto, user);
   }
 
   @Roles(UserRole.COLLABORATOR)
@@ -66,12 +68,12 @@ export class UsersController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    return await this.usersService.updateCollaborator(id, updateUserDto);
+    const user = await this.usersService.updateCollaborator(id, updateUserDto);
+    return plainToInstance(UserResponseDto, user);
   }
 
   @Roles(UserRole.ADMIN)
   @Delete('/:id')
-  @Roles(UserRole.ADMIN)
   @UseInterceptors(CheckCollaboratorInterceptor)
   async deleteCollaborator(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.usersService.deleteCollaborator(id);

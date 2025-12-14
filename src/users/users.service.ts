@@ -59,7 +59,7 @@ export class UsersService {
       });
 
       await this.userRepository.save(createUser);
-      return plainToInstance(UserResponseDto, createUser);
+      return createUser;
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -107,7 +107,6 @@ export class UsersService {
   async findById(id: string) {
     const user = await this.userRepository.findOne({
       where: { id },
-      select: ['id', 'name', 'username', 'role'],
     });
 
     if (!user) {
@@ -117,7 +116,7 @@ export class UsersService {
     return user;
   }
 
-  async updatePassword(password?: string, confirmPassword?: string) {
+  private async updatePassword(password?: string, confirmPassword?: string) {
     if (!password) return;
     if (password !== confirmPassword) {
       throw new BadRequestException('A senha não foi confirmada corretamente');
@@ -159,7 +158,7 @@ export class UsersService {
     hashedPassword ? (user.hashedPassword = hashedPassword) : undefined;
     try {
       const updatedUser = await this.userRepository.save(user);
-      return plainToInstance(UserResponseDto, updatedUser);
+      return updatedUser;
     } catch (error) {
       this.logger.error(error.message);
 
