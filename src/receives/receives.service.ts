@@ -1,5 +1,6 @@
 import {
   forwardRef,
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -16,6 +17,8 @@ import { ReceivesFilterDto } from './dtos/receives-filter.dto';
 import { plainToInstance } from 'class-transformer';
 import { ReceivesResponseDto } from './dtos/receives-response.dto';
 import { paginate } from 'src/common/helpers/paginate';
+import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
+import { getCurrentMonthRange } from 'src/common/helpers/get-current-month';
 
 @Injectable()
 export class ReceivesService {
@@ -29,36 +32,79 @@ export class ReceivesService {
 
   async getDaily(filters: ReceivesFilterDto) {
     const query = this.receiveRepository.createQueryBuilder('receive');
-    const { dateFrom, dateTo } = filters;
 
-    if (dateFrom) query.andWhere('receive.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('receive.date <= :dateTo', { dateTo });
+    applyPeriodFilter(query, filters, { alias: 'receive' });
 
-    try {
-      const dailyReceives = await query
-        .select(`to_char(receive.date, 'YYYY-MM-DD')`, 'date')
-        .addSelect('receive.totalPrice', 'totalPrice')
-        .getRawMany();
+    const dailyReceives = await query
+      .select(`to_char(receive.date, 'YYYY-MM-DD')`, 'date')
+      .addSelect('receive.totalPrice', 'totalPrice')
+      .getRawMany();
 
-      return dailyReceives.map((r) => ({
-        date: r.date,
-        totalPrice: Number(r.totalPrice),
-      }));
-    } catch (error) {
-      this.logger.error(error.message);
+    return dailyReceives.map((r) => ({
+      date: r.date,
+      totalPrice: Number(r.totalPrice),
+    }));
+  }
 
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
+  async monthlyTotal() {
+    const { start, end } = getCurrentMonthRange();
 
-      throw new InternalServerErrorException(error.message);
-    }
+    const receivesSum = await this.receiveRepository
+      .createQueryBuilder('receive')
+      .select('SUM(receive.totalPrice)', 'total')
+      .where('receive.date BETWEEN :start AND :end', {
+        start,
+        end,
+      })
+      .getRawOne();
+
+    return Number(receivesSum.total) || 0;
+  }
+
+  async getOfTheDay() {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    const receivesSum = await this.receiveRepository
+      .createQueryBuilder('receive')
+      .select('SUM(receive.totalPrice)', 'total')
+      .where('receive.date = :date', {
+        date: currentDate,
+      })
+      .getRawOne();
+
+    return Number(receivesSum.total) || 0;
+  }
+
+  async averageDaily() {
+    const { start, end } = getCurrentMonthRange();
+
+    const average = await this.receiveRepository
+      .createQueryBuilder('receive')
+      .select('AVG(receive.totalPrice)', 'total')
+      .where('receive.date BETWEEN :start AND :end', {
+        start,
+        end,
+      })
+      .getRawOne();
+
+    return Number(average.total);
+  }
+
+  async getTotal(filters: ReceivesFilterDto) {
+    const query = this.receiveRepository.createQueryBuilder('receive');
+
+    applyPeriodFilter(query, filters, { alias: 'receive' });
+
+    const receivesSum = await query
+      .select('SUM(receive.totalPrice)', 'total')
+      .getRawOne();
+
+    return receivesSum;
   }
 
   async findAll(filters: ReceivesFilterDto) {
     const {
-      dateFrom,
-      dateTo,
       minTank,
       maxTank,
       minValue,
@@ -71,8 +117,8 @@ export class ReceivesService {
       .createQueryBuilder('receive')
       .orderBy('receive.date', 'DESC');
 
-    if (dateFrom) query.andWhere('receive.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('receive.date <= :dateTo', { dateTo });
+    applyPeriodFilter(query, filters, { alias: 'receive' });
+
     if (minTank)
       query.andWhere('receive.tank_quantity >= :minTank', { minTank });
     if (maxTank)
@@ -83,20 +129,18 @@ export class ReceivesService {
       query.andWhere('receive.totalPrice <= :maxValue', { maxValue });
 
     try {
-      const average = await this.averageDaily();
-      const monthly = await this.monthlyTotal();
-
-      const paginated = await paginate(query, page, limit);
+      const [average, monthly, paginated] = await Promise.all([
+        this.averageDaily(),
+        this.monthlyTotal(),
+        paginate(query, page, limit),
+      ]);
 
       const data = plainToInstance(ReceivesResponseDto, paginated.data);
 
       return {
         average,
         monthly,
-        total: paginated.total,
-        page: paginated.page,
-        limit: paginated.limit,
-        totalPages: paginated.totalPages,
+        ...paginated,
         data,
       };
     } catch (error) {
@@ -106,26 +150,16 @@ export class ReceivesService {
   }
 
   async findByDate(date: Date) {
-    try {
-      const receive = await this.receiveRepository.findOne({
-        where: { date },
-        relations: ['localProductions', 'producerProductions'],
-      });
+    const receive = await this.receiveRepository.findOne({
+      where: { date },
+      relations: ['localProductions', 'producerProductions'],
+    });
 
-      if (!receive) {
-        throw new NotFoundException(`Receita da data ${date} não encontrada`);
-      }
-
-      return receive;
-    } catch (error) {
-      this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(error.message);
+    if (!receive) {
+      throw new NotFoundException(`Receita da data ${date} não encontrada`);
     }
+
+    return receive;
   }
 
   async findOrCreate(date: Date) {
@@ -142,11 +176,9 @@ export class ReceivesService {
       return receive;
     } catch (error) {
       this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
-
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -170,11 +202,9 @@ export class ReceivesService {
       return await this.receiveRepository.save(receive);
     } catch (error) {
       this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
-
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -196,11 +226,6 @@ export class ReceivesService {
       return await this.receiveRepository.save(receive);
     } catch (error) {
       this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -208,17 +233,13 @@ export class ReceivesService {
   async updateSalePrice(date: Date, value: number) {
     try {
       const receive = await this.findByDate(date);
-
       receive.salePrice = value;
-
       await this.receiveRepository.save(receive);
     } catch (error) {
       this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
-        return;
+      if (error instanceof HttpException) {
+        throw error;
       }
-
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -240,11 +261,9 @@ export class ReceivesService {
       return receive;
     } catch (error) {
       this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
-
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -259,11 +278,6 @@ export class ReceivesService {
       await this.remove(receive);
     } catch (error) {
       this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -285,11 +299,9 @@ export class ReceivesService {
       return receive;
     } catch (error) {
       this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
-
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -307,11 +319,6 @@ export class ReceivesService {
       await this.remove(receive);
     } catch (error) {
       this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
       throw new InternalServerErrorException(error.message);
     }
   }
@@ -326,107 +333,6 @@ export class ReceivesService {
       }
 
       return receive;
-    } catch (error) {
-      this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(error.message);
-    }
-  }
-
-  async monthlyTotal() {
-    const currentDate = new Date();
-    const startDateMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      1,
-    );
-
-    const endDateMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() + 1,
-      0,
-    );
-
-    try {
-      const receivesSum = await this.receiveRepository
-        .createQueryBuilder('receive')
-        .select('SUM(receive.totalPrice)', 'total')
-        .where('receive.date BETWEEN :start AND :end', {
-          start: startDateMonth,
-          end: endDateMonth,
-        })
-        .getRawOne();
-
-      return Number(receivesSum.total) || 0;
-    } catch (error) {
-      this.logger.error(error.message);
-      throw new InternalServerErrorException(error.message);
-    }
-  }
-
-  async getOfTheDay() {
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-
-    try {
-      const receivesSum = await this.receiveRepository
-        .createQueryBuilder('receive')
-        .select('SUM(receive.totalPrice)', 'total')
-        .where('receive.date = :date', {
-          date: currentDate,
-        })
-        .getRawOne();
-
-      return Number(receivesSum.total).toFixed(2) || 0;
-    } catch (error) {
-      this.logger.error(error.message);
-      throw new InternalServerErrorException(error.message);
-    }
-  }
-
-  async averageDaily() {
-    const currentDate = new Date();
-    const startDateMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      1,
-    );
-
-    const endDateMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() + 1,
-      0,
-    );
-
-    const average = await this.receiveRepository
-      .createQueryBuilder('receive')
-      .select('AVG(receive.totalPrice)', 'total')
-      .where('receive.date BETWEEN :start AND :end', {
-        start: startDateMonth,
-        end: endDateMonth,
-      })
-      .getRawOne();
-
-    return Number(average.total);
-  }
-
-  async getTotal(filters: ReceivesFilterDto) {
-    const query = this.receiveRepository.createQueryBuilder('receive');
-    const { dateFrom, dateTo } = filters;
-
-    if (dateFrom) query.andWhere('receive.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('receive.date <= :dateTo', { dateTo });
-
-    try {
-      const receivesSum = await query
-        .select('SUM(receive.totalPrice)', 'total')
-        .getRawOne();
-
-      return receivesSum;
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
