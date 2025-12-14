@@ -183,13 +183,19 @@ export class FinancialReportService {
 
       const generatedAt = new Date();
 
+      const [overview, detail, daily] = await Promise.all([
+        this.getOverview(filters),
+        this.getDetailed(filters),
+        this.getDaily(filters),
+      ]);
+
       const html = template({
         logoBase64,
         period: { dateFrom, dateTo },
         generatedAt,
-        overview: await this.getOverview(filters),
-        detail: await this.getDetailed(filters),
-        daily: await this.getDaily(filters),
+        overview,
+        detail,
+        daily,
       });
 
       return this.pdfService.generatePdf(html);
