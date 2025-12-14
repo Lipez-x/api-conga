@@ -7,8 +7,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Expense } from './entities/expense.entity';
 import { Repository } from 'typeorm';
-import { ExpensesFilter } from './dtos/expenses-filter.dto';
-import { ComparePeriodsDto } from './dtos/compare-periods.dto';
+import { PeriodFilter } from 'src/common/dtos/period-filter.dto';
+import { MonthlyCompareFilter } from 'src/common/dtos/monthly-comparison-filter.dto';
 
 @Injectable()
 export class ExpensesService {
@@ -18,7 +18,7 @@ export class ExpensesService {
     private readonly expenseRepository: Repository<Expense>,
   ) {}
 
-  async getGrouped(filters: ExpensesFilter) {
+  async getGrouped(filters: PeriodFilter) {
     const query = this.expenseRepository.createQueryBuilder('expense');
     const { dateFrom, dateTo } = filters;
 
@@ -69,7 +69,7 @@ export class ExpensesService {
     }
   }
 
-  async getDaily(filters: ExpensesFilter) {
+  async getDaily(filters: PeriodFilter) {
     const query = this.expenseRepository.createQueryBuilder('expense');
     const { dateFrom, dateTo } = filters;
 
@@ -128,7 +128,7 @@ export class ExpensesService {
     return { dateFrom, dateTo };
   }
 
-  async compareByPeriod(dto: ComparePeriodsDto) {
+  async compareByPeriod(dto: MonthlyCompareFilter) {
     const { periodOne, periodTwo } = dto;
 
     const monthOne = this.parsePeriod(periodOne);
