@@ -5,18 +5,15 @@ import {
 } from '@nestjs/common';
 import { ExpensesService } from '../expenses/expenses.service';
 import { ReceivesService } from '../receives/receives.service';
-import { ProductionsService } from '../productions/productions.service';
-import { FinancialReportFilterDto } from './dtos/financial-report-filter.dto';
-import { Receive } from 'src/receives/entities/receive.entity';
-import { ComparePeriodsDto } from './dtos/compare-periods-dto';
 import { join } from 'path';
 import { readFileSync } from 'fs';
 import Handlebars from 'handlebars';
 import { PdfService } from './financial-report-pdf.service';
 import { registerHandlebarsHelpers } from 'src/common/helpers/handlebars.helpers';
 import { LocalProductionService } from 'src/productions/local/local-production.service';
-import { ProducerProduction } from 'src/productions/producer/entities/producer-production.entity';
 import { ProducerProductionService } from 'src/productions/producer/producer-production.service';
+import { PeriodFilter } from 'src/common/dtos/period-filter.dto';
+import { MonthlyCompareFilter } from 'src/common/dtos/monthly-comparison-filter.dto';
 
 @Injectable()
 export class FinancialReportService {
@@ -32,7 +29,7 @@ export class FinancialReportService {
     registerHandlebarsHelpers();
   }
 
-  async getOverview(filters: FinancialReportFilterDto) {
+  async getOverview(filters: PeriodFilter) {
     try {
       const expensesData = await this.expensesService.getGrouped({
         dateFrom: filters.dateFrom,
@@ -44,10 +41,8 @@ export class FinancialReportService {
         dateTo: filters.dateTo,
       });
 
-      const totalExpenses = Number(expensesData.total.toFixed(2));
-
+      const totalExpenses = Number(expensesData.total);
       const totalReceives = Number(receivesData.total);
-
       const periodResult = Number((totalReceives - totalExpenses).toFixed(2));
 
       return {
@@ -61,7 +56,7 @@ export class FinancialReportService {
     }
   }
 
-  async getDetailedReport(filters: FinancialReportFilterDto) {
+  async getDetailedReport(filters: PeriodFilter) {
     try {
       const expensesData = await this.expensesService.getGrouped({
         dateFrom: filters.dateFrom,
@@ -80,12 +75,12 @@ export class FinancialReportService {
         });
 
       return {
-        personnel: Number(expensesData.categories.PERSONNEL.toFixed(2)),
-        utility: Number(expensesData.categories.UTILITY.toFixed(2)),
-        supplies: Number(expensesData.categories.SUPPLIES.toFixed(2)),
-        operational: Number(expensesData.categories.OPERATIONAL.toFixed(2)),
-        localProduction: Number(localReceivesData.toFixed(2)),
-        producerProduction: Number(producerReceivesData.toFixed(2)),
+        personnel: Number(expensesData.categories.PERSONNEL),
+        utility: Number(expensesData.categories.UTILITY),
+        supplies: Number(expensesData.categories.SUPPLIES),
+        operational: Number(expensesData.categories.OPERATIONAL),
+        localProduction: Number(localReceivesData),
+        producerProduction: Number(producerReceivesData),
       };
     } catch (error) {
       this.logger.error(error.message);
@@ -123,7 +118,7 @@ export class FinancialReportService {
     );
   }
 
-  async getDaily(filters: FinancialReportFilterDto) {
+  async getDaily(filters: PeriodFilter) {
     const dailyExpenses = await this.expensesService.getDaily(filters);
     const dailyReceives = await this.receivesService.getDaily(filters);
 
@@ -141,7 +136,7 @@ export class FinancialReportService {
     return { dateFrom, dateTo };
   }
 
-  async compareByPeriod(dto: ComparePeriodsDto) {
+  async compareByPeriod(dto: MonthlyCompareFilter) {
     const { periodOne, periodTwo } = dto;
 
     const monthOne = this.parsePeriod(periodOne);
@@ -174,7 +169,7 @@ export class FinancialReportService {
     return readFileSync(filePath, 'utf-8');
   }
 
-  async generatePdf(filters: FinancialReportFilterDto) {
+  async generatePdf(filters: PeriodFilter) {
     try {
       const { dateFrom, dateTo } = filters;
       const htmlTemplate = this.loadTemplate('financial-report.hbs');
