@@ -13,6 +13,9 @@ import { SalePriceService } from 'src/sale-price/sale-price.service';
 import { LocalProduction } from 'src/productions/local/entities/local-production.entity';
 import { ProducerProduction } from 'src/productions/producer/entities/producer-production.entity';
 import { ReceivesFilterDto } from './dtos/receives-filter.dto';
+import { plainToInstance } from 'class-transformer';
+import { ReceivesResponseDto } from './dtos/receives-response.dto';
+import { paginate } from 'src/common/helpers/paginate';
 
 @Injectable()
 export class ReceivesService {
@@ -80,22 +83,21 @@ export class ReceivesService {
       query.andWhere('receive.totalPrice <= :maxValue', { maxValue });
 
     try {
-      const [rows, total] = await query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .getManyAndCount();
-
       const average = await this.averageDaily();
       const monthly = await this.monthlyTotal();
+
+      const paginated = await paginate(query, page, limit);
+
+      const data = plainToInstance(ReceivesResponseDto, paginated.data);
 
       return {
         average,
         monthly,
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        data: rows,
+        total: paginated.total,
+        page: paginated.page,
+        limit: paginated.limit,
+        totalPages: paginated.totalPages,
+        data,
       };
     } catch (error) {
       this.logger.error(error.message);
@@ -359,7 +361,7 @@ export class ReceivesService {
         })
         .getRawOne();
 
-      return Number(receivesSum.total).toFixed(2) || 0;
+      return Number(receivesSum.total) || 0;
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -409,7 +411,7 @@ export class ReceivesService {
       })
       .getRawOne();
 
-    return Number(average.total).toFixed(2);
+    return Number(average.total);
   }
 
   async getTotal(filters: ReceivesFilterDto) {
