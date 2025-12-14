@@ -8,6 +8,8 @@ import { Expense } from './entities/expense.entity';
 import { Repository } from 'typeorm';
 import { PeriodFilter } from 'src/common/dtos/period-filter.dto';
 import { MonthlyCompareFilter } from 'src/common/dtos/monthly-comparison-filter.dto';
+import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
+import { getCurrentMonthRange } from 'src/common/helpers/get-current-month';
 
 @Injectable()
 export class ExpensesService {
@@ -19,10 +21,8 @@ export class ExpensesService {
 
   async getGrouped(filters: PeriodFilter) {
     const query = this.expenseRepository.createQueryBuilder('expense');
-    const { dateFrom, dateTo } = filters;
 
-    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
+    applyPeriodFilter(query, filters, { alias: 'expense' });
 
     try {
       const result = await query
@@ -62,10 +62,8 @@ export class ExpensesService {
 
   async getDaily(filters: PeriodFilter) {
     const query = this.expenseRepository.createQueryBuilder('expense');
-    const { dateFrom, dateTo } = filters;
 
-    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
+    applyPeriodFilter(query, filters, { alias: 'expense' });
 
     try {
       const dailyExpenses = await query
@@ -96,6 +94,20 @@ export class ExpensesService {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
     }
+  }
+
+  async monthlyTotal() {
+    const { start, end } = getCurrentMonthRange();
+    const expenseSum = await this.expenseRepository
+      .createQueryBuilder('expense')
+      .select('COALESCE(SUM(expense.value), 0)', 'total')
+      .where('expense.date BETWEEN :start AND :end', {
+        start,
+        end,
+      })
+      .getRawOne();
+
+    return Number(expenseSum.total) || 0;
   }
 
   private parsePeriod(period: String) {
@@ -132,36 +144,6 @@ export class ExpensesService {
   async delete(id: string) {
     try {
       await this.expenseRepository.delete(id);
-    } catch (error) {
-      this.logger.error(error.message);
-      throw new InternalServerErrorException(error.message);
-    }
-  }
-
-  async monthlyTotal() {
-    const currentDate = new Date();
-    const startDateMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      1,
-    );
-
-    const endDateMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() + 1,
-      0,
-    );
-    try {
-      const expenseSum = await this.expenseRepository
-        .createQueryBuilder('expense')
-        .select('COALESCE(SUM(expense.value), 0)', 'total')
-        .where('expense.date BETWEEN :start AND :end', {
-          start: startDateMonth,
-          end: endDateMonth,
-        })
-        .getRawOne();
-
-      return Number(expenseSum.total) || 0;
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
