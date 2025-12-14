@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -25,20 +26,23 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async register(registerUserDto: RegisterUserDto) {
-    const { name, username, role, password, confirmPassword } = registerUserDto;
+  private async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(12);
+    return bcrypt.hash(password, salt);
+  }
 
-    const finalPassword = password ? password : process.env.DEFAULT_PASSWORD;
-    const finalConfirmPassword = confirmPassword
-      ? confirmPassword
+  async register(dto: RegisterUserDto): Promise<User> {
+    const password = dto.password ? dto.password : process.env.DEFAULT_PASSWORD;
+    const confirmPassword = dto.confirmPassword
+      ? dto.confirmPassword
       : process.env.DEFAULT_PASSWORD;
 
-    if (!finalPassword || finalPassword !== finalConfirmPassword) {
+    if (!password || password !== confirmPassword) {
       throw new BadRequestException('A senha não foi confirmada corretamente');
     }
 
     const existsUser = await this.userRepository.findOne({
-      where: { username: username },
+      where: { username: dto.username },
     });
 
     if (existsUser) {
@@ -47,15 +51,12 @@ export class UsersService {
       );
     }
 
-    const salt = await bcrypt.genSalt(12);
-    const hashedPassword = await bcrypt.hash(finalPassword, salt);
-
     try {
       const createUser = this.userRepository.create({
-        name,
-        username,
-        role,
-        hashedPassword,
+        name: dto.name,
+        username: dto.username,
+        role: dto.role,
+        hashedPassword: await this.hashPassword(password),
       });
 
       await this.userRepository.save(createUser);
@@ -66,8 +67,8 @@ export class UsersService {
     }
   }
 
-  async findCollaborators(userFilterDto: UserFilterDto) {
-    const { name, username, page = 1, limit = 10 } = userFilterDto;
+  async findCollaborators(filters: UserFilterDto) {
+    const { name, username, page = 1, limit = 10 } = filters;
 
     const query = this.userRepository
       .createQueryBuilder('users')
@@ -100,11 +101,11 @@ export class UsersService {
     }
   }
 
-  async findByUsername(username: string) {
+  async findByUsername(username: string): Promise<User | null> {
     return await this.userRepository.findOne({ where: { username } });
   }
 
-  async findById(id: string) {
+  async findById(id: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
     });
@@ -116,69 +117,60 @@ export class UsersService {
     return user;
   }
 
-  private async updatePassword(password?: string, confirmPassword?: string) {
-    if (!password) return;
-    if (password !== confirmPassword) {
-      throw new BadRequestException('A senha não foi confirmada corretamente');
-    }
-
-    const salt = await bcrypt.genSalt(12);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    return hashedPassword;
-  }
-
-  async updateCollaborator(id: string, updateUserDto: UpdateUserDto) {
+  async updateCollaborator(id: string, dto: UpdateUserDto): Promise<User> {
     const user = await this.userRepository.preload({
       id,
-      ...updateUserDto,
+      ...dto,
     });
 
     if (!user) {
       throw new NotFoundException(`Usuário de id (${id}) não existe`);
     }
 
-    if (updateUserDto.username != undefined) {
+    if (dto.username) {
       const existsUserByUsername = await this.userRepository.findOne({
-        where: { username: updateUserDto.username },
+        where: { username: dto.username },
       });
 
       if (existsUserByUsername && existsUserByUsername.id !== user.id) {
         throw new ConflictException(
-          'Já existe um usuário cadastro com esse username',
+          'Já existe um usuário cadastrado com esse username',
         );
       }
     }
 
-    const hashedPassword = await this.updatePassword(
-      updateUserDto.password,
-      updateUserDto.confirmPassword,
-    );
-
-    hashedPassword ? (user.hashedPassword = hashedPassword) : undefined;
-    try {
-      const updatedUser = await this.userRepository.save(user);
-      return updatedUser;
-    } catch (error) {
-      this.logger.error(error.message);
-
-      if (error instanceof NotFoundException) {
-        throw error;
+    if (dto.password) {
+      if (dto.password !== dto.confirmPassword) {
+        throw new BadRequestException(
+          'A senha não foi confirmada corretamente',
+        );
       }
 
+      user.hashedPassword = await this.hashPassword(dto.password);
+    }
+
+    try {
+      return await this.userRepository.save(user);
+    } catch (error) {
+      this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
     }
   }
 
   async deleteCollaborator(id: string) {
+    const user = await this.userRepository.exists({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException(`Usuário de id (${id}) não existe`);
+    }
+
     try {
-      const collaborator = await this.findById(id);
-      await this.userRepository.delete(collaborator);
+      await this.userRepository.delete(id);
       return { message: `Usuário com id(${id}) deletado com sucesso` };
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
