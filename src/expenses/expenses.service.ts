@@ -50,12 +50,12 @@ export class ExpensesService {
         .getRawOne();
 
       return {
-        total: Number(total.total || 0),
+        total: total.total,
         categories: {
-          PERSONNEL: Number(categories.totalPersonnel || 0),
-          UTILITY: Number(categories.totalUtility || 0),
-          SUPPLIES: Number(categories.totalSupplies || 0),
-          OPERATIONAL: Number(categories.totalOperational || 0),
+          PERSONNEL: categories.totalPersonnel,
+          UTILITY: categories.totalUtility,
+          SUPPLIES: categories.totalSupplies,
+          OPERATIONAL: categories.totalOperational,
         },
       };
     } catch (error) {
@@ -100,14 +100,7 @@ export class ExpensesService {
         .orderBy('date', 'DESC')
         .getRawMany();
 
-      return dailyExpenses.map((e) => ({
-        date: e.date,
-        total: Number(e.total),
-        personnel: Number(e.personnel),
-        utility: Number(e.utility),
-        supplies: Number(e.supplies),
-        operational: Number(e.operational),
-      }));
+      return dailyExpenses;
     } catch (error) {
       this.logger.error(error.message);
 
@@ -128,8 +121,8 @@ export class ExpensesService {
     return { dateFrom, dateTo };
   }
 
-  async compareByPeriod(dto: MonthlyCompareFilter) {
-    const { periodOne, periodTwo } = dto;
+  async compareByPeriod(filters: MonthlyCompareFilter) {
+    const { periodOne, periodTwo } = filters;
 
     const monthOne = this.parsePeriod(periodOne);
     const monthTwo = this.parsePeriod(periodTwo);
