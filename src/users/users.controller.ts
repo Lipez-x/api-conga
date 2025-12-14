@@ -32,23 +32,21 @@ export class UsersController {
 
   @Roles(UserRole.ADMIN)
   @Post('/register')
-  async register(
-    @Body() registerUserDto: RegisterUserDto,
-  ): Promise<UserResponseDto> {
-    const user = this.usersService.register(registerUserDto);
+  async register(@Body() dto: RegisterUserDto): Promise<UserResponseDto> {
+    const user = this.usersService.register(dto);
     return plainToInstance(UserResponseDto, user);
   }
 
   @Roles(UserRole.ADMIN)
   @Get()
-  async findCollaborators(@Query() userFilterDto: UserFilterDto): Promise<{
+  async findCollaborators(@Query() filters: UserFilterDto): Promise<{
     total: number;
     page: number;
     limit: number;
     totalPages: number;
     data: UserResponseDto[];
   }> {
-    return await this.usersService.findCollaborators(userFilterDto);
+    return await this.usersService.findCollaborators(filters);
   }
 
   @Get('/:id')
@@ -66,9 +64,9 @@ export class UsersController {
   async updateCollaborator(
     @CurrentUser() _user: User,
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() dto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    const user = await this.usersService.updateCollaborator(id, updateUserDto);
+    const user = await this.usersService.updateCollaborator(id, dto);
     return plainToInstance(UserResponseDto, user);
   }
 
