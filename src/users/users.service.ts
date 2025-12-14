@@ -14,6 +14,8 @@ import * as bcrypt from 'bcrypt';
 import { UserFilterDto } from './dtos/user-filter.dto';
 import { UserRole } from './enums/user-role.enum';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { plainToInstance } from 'class-transformer';
+import { UserResponseDto } from './dtos/user-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -57,10 +59,7 @@ export class UsersService {
       });
 
       await this.userRepository.save(createUser);
-      return {
-        ...createUser,
-        hashedPassword: undefined,
-      };
+      return plainToInstance(UserResponseDto, createUser);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -72,8 +71,7 @@ export class UsersService {
 
     const query = this.userRepository
       .createQueryBuilder('users')
-      .where('users.role = :role', { role: UserRole.COLLABORATOR })
-      .select(['users.id', 'users.name', 'users.username', 'users.role']);
+      .where('users.role = :role', { role: UserRole.COLLABORATOR });
 
     if (name) query.andWhere('users.name ILIKE :name', { name: `%${name}%` });
     if (username)
@@ -82,10 +80,12 @@ export class UsersService {
       });
 
     try {
-      const [data, total] = await query
+      const [rows, total] = await query
         .skip((page - 1) * limit)
         .take(limit)
         .getManyAndCount();
+
+      const data = plainToInstance(UserResponseDto, rows);
 
       return {
         total,
@@ -105,10 +105,16 @@ export class UsersService {
   }
 
   async findById(id: string) {
-    return await this.userRepository.findOne({
+    const user = await this.userRepository.findOne({
       where: { id },
       select: ['id', 'name', 'username', 'role'],
     });
+
+    if (!user) {
+      throw new NotFoundException(`Usuário de id (${id}) não existe`);
+    }
+
+    return user;
   }
 
   async updatePassword(password?: string, confirmPassword?: string) {
@@ -153,10 +159,7 @@ export class UsersService {
     hashedPassword ? (user.hashedPassword = hashedPassword) : undefined;
     try {
       const updatedUser = await this.userRepository.save(user);
-      return {
-        ...updatedUser,
-        hashedPassword: undefined,
-      };
+      return plainToInstance(UserResponseDto, updatedUser);
     } catch (error) {
       this.logger.error(error.message);
 
@@ -170,15 +173,8 @@ export class UsersService {
 
   async deleteCollaborator(id: string) {
     try {
-      const personnelCost = await this.userRepository.findOne({
-        where: { id },
-      });
-
-      if (!personnelCost) {
-        throw new NotFoundException(`Usuário de id ${id} não encontrado`);
-      }
-
-      await this.userRepository.delete(personnelCost);
+      const collaborator = await this.findById(id);
+      await this.userRepository.delete(collaborator);
       return { message: `Usuário com id(${id}) deletado com sucesso` };
     } catch (error) {
       this.logger.error(error.message);
