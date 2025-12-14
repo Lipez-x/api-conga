@@ -24,6 +24,7 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from './entities/user.entity';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { paginatedResponse } from 'src/common/helpers/paginated-response';
 
 @UsePipes(ValidationPipe)
 @Controller('users')
@@ -46,7 +47,8 @@ export class UsersController {
     totalPages: number;
     data: UserResponseDto[];
   }> {
-    return await this.usersService.findCollaborators(filters);
+    const result = await this.usersService.findCollaborators(filters);
+    return paginatedResponse(result, UserResponseDto);
   }
 
   @Get('/:id')

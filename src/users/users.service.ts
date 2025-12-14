@@ -15,8 +15,7 @@ import * as bcrypt from 'bcrypt';
 import { UserFilterDto } from './dtos/user-filter.dto';
 import { UserRole } from './enums/user-role.enum';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { plainToInstance } from 'class-transformer';
-import { UserResponseDto } from './dtos/user-response.dto';
+import { paginate } from 'src/common/helpers/paginate';
 
 @Injectable()
 export class UsersService {
@@ -81,20 +80,7 @@ export class UsersService {
       });
 
     try {
-      const [rows, total] = await query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .getManyAndCount();
-
-      const data = plainToInstance(UserResponseDto, rows);
-
-      return {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        data,
-      };
+      return await paginate(query, page, limit);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
