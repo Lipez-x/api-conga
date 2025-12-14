@@ -1,4 +1,10 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { PeriodFilter } from 'src/common/dtos/period-filter.dto';
 import { MonthlyCompareFilter } from 'src/common/dtos/monthly-comparison-filter.dto';
@@ -8,6 +14,7 @@ import { DailyExpensesDto } from './dtos/daily-expenses.dto';
 import { CompareExpensesDto } from './dtos/compare-expenses.dto';
 
 @Controller('expenses')
+@UsePipes(ValidationPipe)
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 

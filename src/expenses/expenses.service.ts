@@ -2,7 +2,6 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Expense } from './entities/expense.entity';
@@ -26,11 +25,8 @@ export class ExpensesService {
     if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
 
     try {
-      const total = await query
+      const result = await query
         .select('SUM(expense.value)', 'total')
-        .getRawOne();
-
-      const categories = await query
         .addSelect(
           `SUM(expense.value) FILTER (WHERE expense.category = 'PERSONNEL')`,
           'totalPersonnel',
@@ -50,12 +46,12 @@ export class ExpensesService {
         .getRawOne();
 
       return {
-        total: total.total,
+        total: result.total,
         categories: {
-          PERSONNEL: categories.totalPersonnel,
-          UTILITY: categories.totalUtility,
-          SUPPLIES: categories.totalSupplies,
-          OPERATIONAL: categories.totalOperational,
+          PERSONNEL: result.totalPersonnel,
+          UTILITY: result.totalUtility,
+          SUPPLIES: result.totalSupplies,
+          OPERATIONAL: result.totalOperational,
         },
       };
     } catch (error) {
@@ -158,14 +154,14 @@ export class ExpensesService {
     try {
       const expenseSum = await this.expenseRepository
         .createQueryBuilder('expense')
-        .select('SUM(expense.value)', 'total')
+        .select('COALESCE(SUM(expense.value), 0)', 'total')
         .where('expense.date BETWEEN :start AND :end', {
           start: startDateMonth,
           end: endDateMonth,
         })
         .getRawOne();
 
-      return Number(expenseSum.total).toFixed(2) || 0;
+      return Number(expenseSum.total) || 0;
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
