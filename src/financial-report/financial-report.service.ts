@@ -56,7 +56,7 @@ export class FinancialReportService {
     }
   }
 
-  async getDetailedReport(filters: PeriodFilter) {
+  async getDetailed(filters: PeriodFilter) {
     try {
       const expensesData = await this.expensesService.getGrouped({
         dateFrom: filters.dateFrom,
@@ -136,7 +136,7 @@ export class FinancialReportService {
     return { dateFrom, dateTo };
   }
 
-  async compareByPeriod(dto: MonthlyCompareFilter) {
+  async compareMonths(dto: MonthlyCompareFilter) {
     const { periodOne, periodTwo } = dto;
 
     const monthOne = this.parsePeriod(periodOne);
@@ -188,7 +188,7 @@ export class FinancialReportService {
         period: { dateFrom, dateTo },
         generatedAt,
         overview: await this.getOverview(filters),
-        detail: await this.getDetailedReport(filters),
+        detail: await this.getDetailed(filters),
         daily: await this.getDaily(filters),
       });
 
