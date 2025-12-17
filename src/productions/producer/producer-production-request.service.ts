@@ -58,63 +58,51 @@ export class ProducerProductionRequestService {
   }
 
   async validate(id: string) {
-    try {
-      const request = await this.producerProductionRequestRepository.findOne({
-        where: { id },
-      });
+    return this.producerProductionRequestRepository.manager.transaction(
+      async (manager) => {
+        const request = await manager.findOne(ProducerProductionRequest, {
+          where: { id },
+        });
 
-      if (!request) {
-        throw new NotFoundException(
-          `Solicitação de registro de produção de produtor com id ${id} não encontrada`,
-        );
-      }
+        if (!request) {
+          throw new NotFoundException(
+            `Solicitação de registro de produção de produtor com id ${id} não encontrada`,
+          );
+        }
 
-      const producerProduction: RegisterProducerProductionDto = {
-        date: request.date,
-        producerName: request.producerName,
-        totalQuantity: request.totalQuantity,
-      };
+        request.status = RequestStatus.ACCEPTED;
 
-      request.status = RequestStatus.ACCEPTED;
+        await this.producerProductionService.register({
+          date: request.date,
+          producerName: request.producerName,
+          totalQuantity: request.totalQuantity,
+        });
 
-      await this.producerProductionService.register(producerProduction);
-      await this.producerProductionRequestRepository.save(request);
-      await this.producerProductionRequestRepository.softDelete(request.id);
-    } catch (error) {
-      this.logger.error(error.message);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(error.message);
-    }
+        await manager.save(request);
+        await manager.softDelete(ProducerProductionRequest, request.id);
+      },
+    );
   }
 
   async unvalidate(id: string) {
-    try {
-      const request = await this.producerProductionRequestRepository.findOne({
-        where: { id },
-      });
+    return this.producerProductionRequestRepository.manager.transaction(
+      async (manager) => {
+        const request = await manager.findOne(ProducerProductionRequest, {
+          where: { id },
+        });
 
-      if (!request) {
-        throw new NotFoundException(
-          `Solicitação de registro de produção de produtor com id ${id} não encontrada`,
-        );
-      }
+        if (!request) {
+          throw new NotFoundException(
+            `Solicitação de registro de produção de produtor com id ${id} não encontrada`,
+          );
+        }
 
-      request.status = RequestStatus.REJECTED;
-      await this.producerProductionRequestRepository.save(request);
-      await this.producerProductionRequestRepository.softDelete(request.id);
-    } catch (error) {
-      this.logger.error(error.message);
+        request.status = RequestStatus.REJECTED;
 
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException(error.message);
-    }
+        await manager.save(request);
+        await manager.softDelete(ProducerProductionRequest, request.id);
+      },
+    );
   }
 
   async findAll(filters: FilterProducerProductionDto, status: RequestStatus) {
