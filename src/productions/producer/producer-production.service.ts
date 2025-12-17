@@ -27,23 +27,23 @@ export class ProducerProductionService {
   ) {}
 
   async register(registerProducerProductionDto: RegisterProducerProductionDto) {
-    return this.producerProductionRepository.manager.transaction(
-      async (manager) => {
-        const production = manager.create(
-          ProducerProduction,
-          registerProducerProductionDto,
-        );
+    try {
+      const production = this.producerProductionRepository.create({
+        ...registerProducerProductionDto,
+      });
 
-        const receive = await this.receivesService.findOrCreate(
-          registerProducerProductionDto.date,
-        );
+      const receive = await this.receivesService.findOrCreate(
+        registerProducerProductionDto.date,
+      );
 
-        await manager.save(production);
+      await this.producerProductionRepository.save(production);
 
-        receive.producerProductions.push(production);
-        await this.receivesService.recalculateAndSave(receive);
-      },
-    );
+      receive.producerProductions.push(production);
+      await this.receivesService.recalculateAndSave(receive);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   async findAll(filters: FilterProducerProductionDto) {

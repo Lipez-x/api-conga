@@ -1,4 +1,5 @@
 import {
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -12,6 +13,8 @@ import { FilterLocalProductionDto } from './dtos/filter-local-production.dto';
 import { ReceivesService } from 'src/receives/receives.service';
 import { UpdateLocalProductionDto } from './dtos/update-local-production.dto';
 import { LocalProductionPeriodFilter } from './dtos/filter-period-local-production.dto';
+import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
+import { paginate } from 'src/common/helpers/paginate';
 
 @Injectable()
 export class LocalProductionService {
@@ -45,8 +48,6 @@ export class LocalProductionService {
 
   async findAll(filters: FilterLocalProductionDto) {
     const {
-      dateFrom,
-      dateTo,
       grossQuantityMin,
       grossQuantityMax,
       consumedQuantityMin,
@@ -61,8 +62,8 @@ export class LocalProductionService {
       .createQueryBuilder('production')
       .orderBy('production.date', 'DESC');
 
-    if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
+    applyPeriodFilter(query, filters, { alias: 'production' });
+
     if (grossQuantityMin)
       query.andWhere('production.gross_quantity >= :grossQuantityMin', {
         grossQuantityMin,
@@ -89,26 +90,7 @@ export class LocalProductionService {
       });
 
     try {
-      const [rows, total] = await query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .getManyAndCount();
-
-      const data = rows.map((item) => ({
-        id: item.id,
-        date: item.date,
-        grossQuantity: item.grossQuantity,
-        consumedQuantity: item.consumedQuantity,
-        totalQuantity: item.totalQuantity,
-      }));
-
-      return {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        data,
-      };
+      return await paginate(query, page, limit);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -131,7 +113,7 @@ export class LocalProductionService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -170,7 +152,7 @@ export class LocalProductionService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -204,7 +186,7 @@ export class LocalProductionService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -213,13 +195,10 @@ export class LocalProductionService {
   }
 
   async getGrouped(filters: LocalProductionPeriodFilter) {
-    const { dateFrom, dateTo } = filters;
-
     const query =
       this.localProductionRepository.createQueryBuilder('production');
 
-    if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
+    applyPeriodFilter(query, filters, { alias: 'production' });
 
     try {
       const result = await query
@@ -242,10 +221,8 @@ export class LocalProductionService {
     const query = this.localProductionRepository
       .createQueryBuilder('production')
       .leftJoinAndSelect('production.receive', 'receive');
-    const { dateFrom, dateTo } = filters;
 
-    if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
+    applyPeriodFilter(query, filters, { alias: 'production' });
 
     try {
       const localReceive = await query
