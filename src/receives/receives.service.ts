@@ -150,16 +150,26 @@ export class ReceivesService {
   }
 
   async findByDate(date: Date) {
-    const receive = await this.receiveRepository.findOne({
-      where: { date },
-      relations: ['localProductions', 'producerProductions'],
-    });
+    try {
+      const receive = await this.receiveRepository.findOne({
+        where: { date },
+        relations: ['localProductions', 'producerProductions'],
+      });
 
-    if (!receive) {
-      throw new NotFoundException(`Receita da data ${date} não encontrada`);
+      if (!receive) {
+        throw new NotFoundException(`Receita da data ${date} não encontrada`);
+      }
+
+      return receive;
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error.message);
     }
-
-    return receive;
   }
 
   async findOrCreate(date: Date) {
@@ -237,8 +247,8 @@ export class ReceivesService {
       await this.receiveRepository.save(receive);
     } catch (error) {
       this.logger.error(error.message);
-      if (error instanceof HttpException) {
-        throw error;
+      if (error instanceof NotFoundException) {
+        return;
       }
       throw new InternalServerErrorException(error.message);
     }
