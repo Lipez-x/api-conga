@@ -35,7 +35,7 @@ export class ReceivesController {
   async updateSalePrice(
     @Param('date') date: Date,
     @Body() dto: UpdateSalePriceDto,
-  ) {
+  ): Promise<void> {
     return await this.receivesService.updateSalePrice(date, dto.value);
   }
 }

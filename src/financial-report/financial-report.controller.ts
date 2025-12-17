@@ -54,7 +54,10 @@ export class FinancialReportController {
   }
 
   @Get('/pdf')
-  async getPdf(@Query() filters: PeriodFilter, @Res() res: Response) {
+  async getPdf(
+    @Query() filters: PeriodFilter,
+    @Res() res: Response,
+  ): Promise<void> {
     const pdf = await this.financialReportService.generatePdf(filters);
 
     res.set({
