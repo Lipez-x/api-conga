@@ -19,6 +19,8 @@ import { RegisterProducerProductionDto } from './dtos/register-producer-producti
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { RequestStatus } from './enums/request-status.enum';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
+import { paginatedResponse } from 'src/common/helpers/paginated-response';
+import { ProducerProductionRequestResponseDto } from './dtos/producer-production-request-response.dto';
 
 @Controller('productions/producer/requests')
 @UsePipes(ValidationPipe)
@@ -30,7 +32,7 @@ export class ProducerProductionRequestController {
   @Post('/register')
   async register(
     @Body() registerProducerProductionDto: RegisterProducerProductionDto,
-  ) {
+  ): Promise<void> {
     return await this.producerProductionRequestService.register(
       registerProducerProductionDto,
     );
@@ -40,8 +42,19 @@ export class ProducerProductionRequestController {
   async findAll(
     @Query() filters: FilterProducerProductionDto,
     @Query('status') status: RequestStatus,
-  ) {
-    return await this.producerProductionRequestService.findAll(filters, status);
+  ): Promise<{
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    data: ProducerProductionRequestResponseDto[];
+  }> {
+    const result = await this.producerProductionRequestService.findAll(
+      filters,
+      status,
+    );
+
+    return paginatedResponse(result, ProducerProductionRequestResponseDto);
   }
 
   @Roles(UserRole.ADMIN)
@@ -49,7 +62,7 @@ export class ProducerProductionRequestController {
   async validate(
     @Query('validated', new ParseBoolPipe()) validated: boolean,
     @Param('id', new ParseUUIDPipe()) id: string,
-  ) {
+  ): Promise<void> {
     if (!validated)
       return await this.producerProductionRequestService.unvalidate(id);
 
@@ -61,7 +74,7 @@ export class ProducerProductionRequestController {
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateProducerProductionDto: UpdateProducerProductionDto,
-  ) {
+  ): Promise<void> {
     return await this.producerProductionRequestService.update(
       id,
       updateProducerProductionDto,
@@ -69,7 +82,7 @@ export class ProducerProductionRequestController {
   }
 
   @Delete('/:id')
-  async deleteRequest(@Param('id', new ParseUUIDPipe()) id: string) {
+  async delete(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
     return await this.producerProductionRequestService.delete(id);
   }
 }

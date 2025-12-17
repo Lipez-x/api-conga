@@ -1,6 +1,6 @@
 import { Expose, Transform } from 'class-transformer';
 
-export class ProducerProductionResponseDto {
+export class ProducerProductionRequestResponseDto {
   @Expose()
   id: string;
 
@@ -13,4 +13,10 @@ export class ProducerProductionResponseDto {
   @Transform(({ value }) => Number(value) || 0)
   @Expose()
   totalQuantity: number;
+
+  @Expose()
+  status: string;
+
+  @Expose()
+  validatedAt: string;
 }

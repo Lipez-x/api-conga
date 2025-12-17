@@ -13,6 +13,8 @@ import { RegisterProducerProductionDto } from './dtos/register-producer-producti
 import { RequestStatus } from './enums/request-status.enum';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
+import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
+import { paginate } from 'src/common/helpers/paginate';
 
 @Injectable()
 export class ProducerProductionRequestService {
@@ -36,7 +38,7 @@ export class ProducerProductionRequestService {
         now.getDate(),
       );
       limitDate.setDate(limitDate.getDate() - 1);
-      
+
       if (date > limitDate) {
         return await this.producerProductionService.register(
           registerProducerProductionDto,
@@ -117,8 +119,6 @@ export class ProducerProductionRequestService {
 
   async findAll(filters: FilterProducerProductionDto, status: RequestStatus) {
     const {
-      dateFrom,
-      dateTo,
       producerName,
       totalQuantityMin,
       totalQuantityMax,
@@ -131,9 +131,9 @@ export class ProducerProductionRequestService {
       .withDeleted()
       .orderBy('request.date', 'DESC');
 
+    applyPeriodFilter(query, filters, { alias: 'request' });
+
     if (status) query.andWhere('request.status = :status', { status });
-    if (dateFrom) query.andWhere('request.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('request.date <= :dateTo', { dateTo });
     if (producerName)
       query.andWhere('request.producer_name ILIKE :producerName', {
         producerName: `%${producerName}%`,
@@ -148,18 +148,7 @@ export class ProducerProductionRequestService {
       });
 
     try {
-      const [rows, total] = await query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .getManyAndCount();
-
-      return {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        data: rows,
-      };
+      return await paginate(query, page, limit);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -186,7 +175,7 @@ export class ProducerProductionRequestService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -210,7 +199,7 @@ export class ProducerProductionRequestService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
