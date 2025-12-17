@@ -107,7 +107,6 @@ export class OperationalCostService {
         .createQueryBuilder('cost')
         .leftJoinAndSelect('cost.expense', 'expense')
         .orderBy('expense.date', 'DESC')
-        .limit(1)
         .getOne();
 
       return lastCost;
