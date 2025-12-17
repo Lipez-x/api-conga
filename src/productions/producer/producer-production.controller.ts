@@ -21,6 +21,8 @@ import { UpdateProducerProductionDto } from './dtos/update-producer-production.d
 import { RequestStatus } from './enums/request-status.enum';
 import { ProducerProductionRequestService } from './producer-production-request.service';
 import { User } from 'src/users/entities/user.entity';
+import { paginatedResponse } from 'src/common/helpers/paginated-response';
+import { ProducerProductionResponseDto } from './dtos/producer-production-response.dto';
 
 @UsePipes(ValidationPipe)
 @Controller('productions/producer')
@@ -33,15 +35,24 @@ export class ProducerProductionController {
   @Post('/register')
   async register(
     @Body() registerProducerProductionDto: RegisterProducerProductionDto,
-  ) {
+  ): Promise<void> {
     return await this.producerProductionService.register(
       registerProducerProductionDto,
     );
   }
 
   @Get()
-  async findAll(@Query() filters: FilterProducerProductionDto) {
-    return await this.producerProductionService.findAll(filters);
+  async findAll(
+    @Query() filters: FilterProducerProductionDto,
+  ): Promise<{
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    data: ProducerProductionResponseDto[];
+  }> {
+    const result = await this.producerProductionService.findAll(filters);
+    return paginatedResponse(result, ProducerProductionResponseDto);
   }
 
   @Roles(UserRole.ADMIN)
@@ -49,7 +60,7 @@ export class ProducerProductionController {
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateProducerProductionDto: UpdateProducerProductionDto,
-  ) {
+  ): Promise<{ message: string }> {
     return await this.producerProductionService.update(
       id,
       updateProducerProductionDto,
@@ -58,7 +69,7 @@ export class ProducerProductionController {
 
   @Roles(UserRole.ADMIN)
   @Delete('/:id')
-  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+  async delete(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
     return await this.producerProductionService.delete(id);
   }
 }

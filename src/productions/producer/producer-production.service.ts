@@ -5,7 +5,6 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  Req,
 } from '@nestjs/common';
 import { RegisterProducerProductionDto } from './dtos/register-producer-production.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,7 +13,8 @@ import { Repository } from 'typeorm';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { ReceivesService } from 'src/receives/receives.service';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
-import { ProducerProductionRequest } from './entities/producer-production-request.entity';
+import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
+import { paginate } from 'src/common/helpers/paginate';
 
 @Injectable()
 export class ProducerProductionService {
@@ -48,8 +48,6 @@ export class ProducerProductionService {
 
   async findAll(filters: FilterProducerProductionDto) {
     const {
-      dateFrom,
-      dateTo,
       producerName,
       totalQuantityMin,
       totalQuantityMax,
@@ -61,8 +59,8 @@ export class ProducerProductionService {
       .createQueryBuilder('production')
       .orderBy('production.date', 'DESC');
 
-    if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
+    applyPeriodFilter(query, filters, { alias: 'production' });
+
     if (producerName)
       query.andWhere('production.producer_name ILIKE :producerName', {
         producerName: `%${producerName}%`,
@@ -77,18 +75,7 @@ export class ProducerProductionService {
       });
 
     try {
-      const [rows, total] = await query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .getManyAndCount();
-
-      return {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        data: rows,
-      };
+      return await paginate(query, page, limit);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -112,7 +99,7 @@ export class ProducerProductionService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -125,14 +112,13 @@ export class ProducerProductionService {
       const lastProduction = await this.producerProductionRepository
         .createQueryBuilder('production')
         .orderBy('date', 'DESC')
-        .limit(1)
         .getOne();
 
       return lastProduction;
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -175,7 +161,7 @@ export class ProducerProductionService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -210,7 +196,7 @@ export class ProducerProductionService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -222,10 +208,8 @@ export class ProducerProductionService {
     const query = this.producerProductionRepository
       .createQueryBuilder('production')
       .leftJoinAndSelect('production.receive', 'receive');
-    const { dateFrom, dateTo } = filters;
 
-    if (dateFrom) query.andWhere('production.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('production.date <= :dateTo', { dateTo });
+    applyPeriodFilter(query, filters, { alias: 'production' });
 
     try {
       const producerReceive = await query
