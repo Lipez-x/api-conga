@@ -1,4 +1,5 @@
 import {
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -12,6 +13,8 @@ import { PersonnelCostFilterDto } from './dtos/personnel-cost-filter.dto';
 import { UpdatePersonnelCostDto } from './dtos/update-personnel-cost.dto';
 import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
 import { ExpensesService } from 'src/expenses/expenses.service';
+import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
+import { paginate } from 'src/common/helpers/paginate';
 
 @Injectable()
 export class PersonnelCostService {
@@ -34,7 +37,7 @@ export class PersonnelCostService {
         ...registerPersonnelCostDto,
       });
 
-      return await this.personnelCostRepository.save(personnelCost);
+      await this.personnelCostRepository.save(personnelCost);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -44,8 +47,6 @@ export class PersonnelCostService {
   async findAll(filters: PersonnelCostFilterDto) {
     const {
       type,
-      dateFrom,
-      dateTo,
       minValue,
       maxValue,
       description,
@@ -58,9 +59,9 @@ export class PersonnelCostService {
       .leftJoinAndSelect('cost.expense', 'expense')
       .orderBy('expense.date', 'DESC');
 
+    applyPeriodFilter(query, filters, { alias: 'expense' });
+
     if (type) query.andWhere('cost.type = :type', { type });
-    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
     if (minValue) query.andWhere('expense.value >= :minValue', { minValue });
     if (maxValue) query.andWhere('expense.value <= :maxValue', { maxValue });
     if (description)
@@ -69,26 +70,7 @@ export class PersonnelCostService {
       });
 
     try {
-      const [rows, total] = await query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .getManyAndCount();
-
-      const data = rows.map((item) => ({
-        id: item.id,
-        type: item.type,
-        date: item.expense.date,
-        value: item.expense.value,
-        description: item.description,
-      }));
-
-      return {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        data,
-      };
+      return await paginate(query, page, limit);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -108,19 +90,11 @@ export class PersonnelCostService {
         );
       }
 
-      const formattedPersonnelCost = {
-        id: personnelCost.id,
-        type: personnelCost.type,
-        date: personnelCost.expense.date,
-        value: personnelCost.expense.value,
-        description: personnelCost.description,
-      };
-
-      return formattedPersonnelCost;
+      return personnelCost;
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 

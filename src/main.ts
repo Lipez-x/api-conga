@@ -9,7 +9,9 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionFilter());
   app.useGlobalInterceptors(
     new TimeoutInterceptor(),
-    new ClassSerializerInterceptor(app.get(Reflector)),
+    new ClassSerializerInterceptor(app.get(Reflector), {
+      excludeExtraneousValues: true,
+    }),
   );
 
   app.enableCors({
