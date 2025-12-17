@@ -28,7 +28,9 @@ export class PersonnelCostController {
   constructor(private readonly personnelCostService: PersonnelCostService) {}
 
   @Post('/register')
-  async register(@Body() registerPersonnelCostDto: RegisterPersonnelCostDto) {
+  async register(
+    @Body() registerPersonnelCostDto: RegisterPersonnelCostDto,
+  ): Promise<void> {
     return await this.personnelCostService.register(registerPersonnelCostDto);
   }
 

@@ -1,4 +1,5 @@
 import {
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -12,6 +13,8 @@ import { OperationalCostFilterDto } from './dtos/operational-cost-filter.dto';
 import { UpdateOperationalCostDto } from './dtos/update-operational-cost.dto';
 import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
 import { ExpensesService } from 'src/expenses/expenses.service';
+import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
+import { paginate } from 'src/common/helpers/paginate';
 
 @Injectable()
 export class OperationalCostService {
@@ -33,7 +36,7 @@ export class OperationalCostService {
         ...registerOperationalCostDto,
       });
 
-      return await this.operationalCostRepository.save(operationalCost);
+      await this.operationalCostRepository.save(operationalCost);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -43,8 +46,6 @@ export class OperationalCostService {
   async findAll(filters: OperationalCostFilterDto) {
     const {
       type,
-      dateFrom,
-      dateTo,
       minValue,
       maxValue,
       description,
@@ -57,9 +58,9 @@ export class OperationalCostService {
       .leftJoinAndSelect('cost.expense', 'expense')
       .orderBy('expense.date', 'DESC');
 
+    applyPeriodFilter(query, filters, { alias: 'expense' });
+
     if (type) query.andWhere('cost.type = :type', { type });
-    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
     if (minValue) query.andWhere('expense.value >= :minValue', { minValue });
     if (maxValue) query.andWhere('expense.value <= :maxValue', { maxValue });
     if (description)
@@ -68,26 +69,7 @@ export class OperationalCostService {
       });
 
     try {
-      const [rows, total] = await query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .getManyAndCount();
-
-      const data = rows.map((item) => ({
-        id: item.id,
-        type: item.type,
-        date: item.expense.date,
-        value: item.expense.value,
-        description: item.description,
-      }));
-
-      return {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        data,
-      };
+      return await paginate(query, page, limit);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -107,19 +89,11 @@ export class OperationalCostService {
         );
       }
 
-      const formattedOperationalCost = {
-        id: operationalCost.id,
-        type: operationalCost.type,
-        date: operationalCost.expense.date,
-        value: operationalCost.expense.value,
-        description: operationalCost.description,
-      };
-
-      return formattedOperationalCost;
+      return operationalCost;
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -140,7 +114,7 @@ export class OperationalCostService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -176,7 +150,7 @@ export class OperationalCostService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -204,7 +178,7 @@ export class OperationalCostService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
