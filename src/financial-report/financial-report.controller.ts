@@ -10,11 +10,11 @@ import type { Response } from 'express';
 import { PeriodFilter } from 'src/common/dtos/period-filter.dto';
 import { MonthlyCompareFilter } from 'src/common/dtos/monthly-comparison-filter.dto';
 import { FinancialReportService } from './financial-report.service';
-import { OverviewDto } from './dtos/overview-dto';
+import { OverviewFinancialDto } from './dtos/overview-financial.dto';
 import { plainToInstance } from 'class-transformer';
-import { DetailedDto } from './dtos/detailed-dto';
-import { DailyDto } from './dtos/daily-dto';
-import { CompareMonthsDto } from './dtos/compare-months.dto';
+import { DetailedFinancialDto } from './dtos/detailed-financial.dto';
+import { DailyFinancialDto } from './dtos/daily-financial.dto';
+import { CompareFinancialDto } from './dtos/compare-financial.dto';
 
 @Controller('financial-report')
 @UsePipes(ValidationPipe)
@@ -24,31 +24,33 @@ export class FinancialReportController {
   ) {}
 
   @Get('/overview')
-  async getOverview(@Query() filters: PeriodFilter): Promise<OverviewDto> {
+  async getOverview(
+    @Query() filters: PeriodFilter,
+  ): Promise<OverviewFinancialDto> {
     const overview = await this.financialReportService.getOverview(filters);
-    return plainToInstance(OverviewDto, overview);
+    return plainToInstance(OverviewFinancialDto, overview);
   }
 
   @Get('/detailed')
   async getDetailedReport(
     @Query() filters: PeriodFilter,
-  ): Promise<DetailedDto> {
+  ): Promise<DetailedFinancialDto> {
     const detailed = await this.financialReportService.getDetailed(filters);
-    return plainToInstance(DetailedDto, detailed);
+    return plainToInstance(DetailedFinancialDto, detailed);
   }
 
   @Get('/daily')
-  async getDaily(@Query() filters: PeriodFilter): Promise<DailyDto[]> {
+  async getDaily(@Query() filters: PeriodFilter): Promise<DailyFinancialDto[]> {
     const daily = await this.financialReportService.getDaily(filters);
-    return plainToInstance(DailyDto, daily);
+    return plainToInstance(DailyFinancialDto, daily);
   }
 
   @Get('/compare')
   async compareMonths(
     @Query() filters: MonthlyCompareFilter,
-  ): Promise<CompareMonthsDto> {
+  ): Promise<CompareFinancialDto> {
     const result = await this.financialReportService.compareMonths(filters);
-    return plainToInstance(CompareMonthsDto, result);
+    return plainToInstance(CompareFinancialDto, result);
   }
 
   @Get('/pdf')

@@ -1,6 +1,6 @@
 import { Expose, Transform } from 'class-transformer';
 
-export class OverviewDto {
+export class OverviewFinancialDto {
   @Transform(({ value }) => Number(value) || 0)
   @Expose()
   totalReceives: number;

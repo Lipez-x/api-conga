@@ -1,6 +1,6 @@
 import { Expose, Transform } from 'class-transformer';
 
-export class DailyDto {
+export class DailyFinancialDto {
   @Expose()
   date: string;
 
