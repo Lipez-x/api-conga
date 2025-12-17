@@ -108,14 +108,13 @@ export class PersonnelCostService {
         .createQueryBuilder('cost')
         .leftJoinAndSelect('cost.expense', 'expense')
         .orderBy('expense.date', 'DESC')
-        .limit(1)
         .getOne();
 
       return lastCost;
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -151,7 +150,7 @@ export class PersonnelCostService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -177,7 +176,7 @@ export class PersonnelCostService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
