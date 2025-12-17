@@ -6,12 +6,17 @@ import {
 import { ProductionsService } from './productions/productions.service';
 import { ExpensesService } from './expenses/expenses.service';
 import { ReceivesService } from './receives/receives.service';
-import { DataSource } from 'typeorm';
 import { ProducerProductionService } from './productions/producer/producer-production.service';
 import { SuppliesService } from './supplies/supplies.service';
 import { PersonnelCostService } from './personnel-cost/personnel-cost.service';
 import { OperationalCostService } from './operational-cost/operational-cost.service';
 import { UtilityCostService } from './utility-cost/utility-cost.service';
+import { plainToInstance } from 'class-transformer';
+import { ProducerProductionResponseDto } from './productions/producer/dtos/producer-production-response.dto';
+import { SuppliesResponseDto } from './supplies/dtos/supplies-response.dto';
+import { PersonnelCostResponseDto } from './personnel-cost/dtos/personnel-cost-response.dto';
+import { OperationalCostResponseDto } from './operational-cost/dtos/operational-cost-response.dto';
+import { UtilityCostResponseDto } from './utility-cost/dtos/utility-cost-response.dto';
 
 @Injectable()
 export class AppService {
@@ -55,11 +60,23 @@ export class AppService {
       const lastUtilityCost = await this.utilityCostService.findLast();
 
       return {
-        lastProduction,
-        lastSupply,
-        lastPersonnelCost,
-        lastOperationalCost,
-        lastUtilityCost,
+        lastProduction: plainToInstance(
+          ProducerProductionResponseDto,
+          lastProduction,
+        ),
+        lastSupply: plainToInstance(SuppliesResponseDto, lastSupply),
+        lastPersonnelCost: plainToInstance(
+          PersonnelCostResponseDto,
+          lastPersonnelCost,
+        ),
+        lastOperationalCost: plainToInstance(
+          OperationalCostResponseDto,
+          lastOperationalCost,
+        ),
+        lastUtilityCost: plainToInstance(
+          UtilityCostResponseDto,
+          lastUtilityCost,
+        ),
       };
     } catch (error) {
       this.logger.error(error.message);
