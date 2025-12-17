@@ -1,4 +1,5 @@
 import {
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -12,6 +13,8 @@ import { FilterSuppliesDto } from './dtos/filter-supplies.dto';
 import { UpdateSuppliesDto } from './dtos/update-supplies.dto';
 import { ExpenseType } from 'src/expenses/enums/expense-type.enum';
 import { ExpensesService } from 'src/expenses/expenses.service';
+import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
+import { paginate } from 'src/common/helpers/paginate';
 
 @Injectable()
 export class SuppliesService {
@@ -32,7 +35,7 @@ export class SuppliesService {
         ...registerSuppliesDto,
       });
 
-      return await this.suppliesRepository.save(supply);
+      await this.suppliesRepository.save(supply);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -42,8 +45,6 @@ export class SuppliesService {
   async findAll(filters: FilterSuppliesDto) {
     const {
       name,
-      dateFrom,
-      dateTo,
       minQuantity,
       maxQuantity,
       minUnitPrice,
@@ -59,10 +60,10 @@ export class SuppliesService {
       .leftJoinAndSelect('supplies.expense', 'expense')
       .orderBy('expense.date', 'DESC');
 
+    applyPeriodFilter(query, filters, { alias: 'expense' });
+
     if (name)
       query.andWhere('supplies.name ILIKE :name', { name: `%${name}%` });
-    if (dateFrom) query.andWhere('expense.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('expense.date <= :dateTo', { dateTo });
     if (minQuantity)
       query.andWhere('supplies.quantity >= :minQuantity', { minQuantity });
     if (maxQuantity)
@@ -75,27 +76,7 @@ export class SuppliesService {
     if (maxTotal) query.andWhere('expense.value <= :maxTotal', { maxTotal });
 
     try {
-      const [rows, total] = await query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .getManyAndCount();
-
-      const data = rows.map((item) => ({
-        id: item.id,
-        name: item.name,
-        date: item.expense.date,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        totalCost: item.expense.value,
-      }));
-
-      return {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        data,
-      };
+      return await paginate(query, page, limit);
     } catch (error) {
       this.logger.error(error.message);
       throw new InternalServerErrorException(error.message);
@@ -115,20 +96,11 @@ export class SuppliesService {
         );
       }
 
-      const formattedSupply = {
-        id: supply.id,
-        name: supply.name,
-        date: supply.expense.date,
-        quantity: supply.quantity,
-        unitPrice: supply.unitPrice,
-        totalCost: supply.expense.value,
-      };
-
-      return formattedSupply;
+      return supply;
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -142,14 +114,13 @@ export class SuppliesService {
         .createQueryBuilder('supplies')
         .leftJoinAndSelect('supplies.expense', 'expense')
         .orderBy('expense.date', 'DESC')
-        .limit(1)
         .getOne();
 
       return lastSupply;
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -184,7 +155,7 @@ export class SuppliesService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
@@ -210,7 +181,7 @@ export class SuppliesService {
     } catch (error) {
       this.logger.error(error.message);
 
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
 
