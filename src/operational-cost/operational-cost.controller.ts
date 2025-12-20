@@ -30,12 +30,8 @@ export class OperationalCostController {
 
   @Post('/register')
   @UsePipes(ValidationPipe)
-  async register(
-    @Body() registerOperationalCostDto: RegisterOperationalCostDto,
-  ): Promise<void> {
-    return await this.operationalCostService.register(
-      registerOperationalCostDto,
-    );
+  async register(@Body() dto: RegisterOperationalCostDto): Promise<void> {
+    return await this.operationalCostService.register(dto);
   }
 
   @Get()
@@ -62,12 +58,9 @@ export class OperationalCostController {
   @Put('/:id')
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateOperationalCostDto: UpdateOperationalCostDto,
+    @Body() dto: UpdateOperationalCostDto,
   ): Promise<{ message: string }> {
-    return await this.operationalCostService.update(
-      id,
-      updateOperationalCostDto,
-    );
+    return await this.operationalCostService.update(id, dto);
   }
 
   @Delete('/:id')

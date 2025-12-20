@@ -26,9 +26,9 @@ export class ProducerProductionRequestService {
     private readonly producerProductionService: ProducerProductionService,
   ) {}
 
-  async register(registerProducerProductionDto: RegisterProducerProductionDto) {
+  async register(dto: RegisterProducerProductionDto) {
     try {
-      const date = new Date(registerProducerProductionDto.date);
+      const date = new Date(dto.date);
 
       const now = new Date();
 
@@ -40,13 +40,11 @@ export class ProducerProductionRequestService {
       limitDate.setDate(limitDate.getDate() - 1);
 
       if (date > limitDate) {
-        return await this.producerProductionService.register(
-          registerProducerProductionDto,
-        );
+        return await this.producerProductionService.register(dto);
       }
 
       const request = this.producerProductionRequestRepository.create({
-        ...registerProducerProductionDto,
+        ...dto,
         status: RequestStatus.PENDING,
       });
 
@@ -143,14 +141,11 @@ export class ProducerProductionRequestService {
     }
   }
 
-  async update(
-    id: string,
-    updateProducerProductionDto: UpdateProducerProductionDto,
-  ) {
+  async update(id: string, dto: UpdateProducerProductionDto) {
     try {
       const request = await this.producerProductionRequestRepository.preload({
         id,
-        ...updateProducerProductionDto,
+        ...dto,
       });
 
       if (!request) {

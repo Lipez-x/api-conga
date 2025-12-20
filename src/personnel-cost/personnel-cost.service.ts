@@ -26,15 +26,15 @@ export class PersonnelCostService {
     private readonly expensesService: ExpensesService,
   ) {}
 
-  async register(registerPersonnelCostDto: RegisterPersonnelCostDto) {
+  async register(dto: RegisterPersonnelCostDto) {
     try {
       const personnelCost = this.personnelCostRepository.create({
         expense: {
-          date: registerPersonnelCostDto.date,
-          value: registerPersonnelCostDto.value,
+          date: dto.date,
+          value: dto.value,
           category: ExpenseType.PERSONNEL,
         },
-        ...registerPersonnelCostDto,
+        ...dto,
       });
 
       await this.personnelCostRepository.save(personnelCost);
@@ -122,7 +122,7 @@ export class PersonnelCostService {
     }
   }
 
-  async update(id: string, updatePersonnelCostDto: UpdatePersonnelCostDto) {
+  async update(id: string, dto: UpdatePersonnelCostDto) {
     try {
       const personnelCost = await this.personnelCostRepository.findOne({
         where: { id },
@@ -135,11 +135,11 @@ export class PersonnelCostService {
         );
       }
 
-      Object.assign(personnelCost, updatePersonnelCostDto);
-      if (updatePersonnelCostDto.date || updatePersonnelCostDto.value) {
+      Object.assign(personnelCost, dto);
+      if (dto.date || dto.value) {
         Object.assign(personnelCost.expense, {
-          date: updatePersonnelCostDto.date,
-          value: updatePersonnelCostDto.value,
+          date: dto.date,
+          value: dto.value,
         });
       }
 

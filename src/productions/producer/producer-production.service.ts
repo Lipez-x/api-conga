@@ -26,15 +26,13 @@ export class ProducerProductionService {
     private readonly receivesService: ReceivesService,
   ) {}
 
-  async register(registerProducerProductionDto: RegisterProducerProductionDto) {
+  async register(dto: RegisterProducerProductionDto) {
     try {
       const production = this.producerProductionRepository.create({
-        ...registerProducerProductionDto,
+        ...dto,
       });
 
-      const receive = await this.receivesService.findOrCreate(
-        registerProducerProductionDto.date,
-      );
+      const receive = await this.receivesService.findOrCreate(dto.date);
 
       await this.producerProductionRepository.save(production);
 
@@ -126,10 +124,7 @@ export class ProducerProductionService {
     }
   }
 
-  async update(
-    id: string,
-    updateProducerProductionDto: UpdateProducerProductionDto,
-  ) {
+  async update(id: string, dto: UpdateProducerProductionDto) {
     try {
       const producerProduction =
         await this.producerProductionRepository.findOne({
@@ -144,14 +139,14 @@ export class ProducerProductionService {
       }
 
       const date = producerProduction.date;
-      Object.assign(producerProduction, updateProducerProductionDto);
+      Object.assign(producerProduction, dto);
 
       await this.producerProductionRepository.save(producerProduction);
 
       const receive = await this.receivesService.replaceProducerProduction(
         date,
         producerProduction,
-        updateProducerProductionDto.date,
+        dto.date,
       );
 
       await this.receivesService.recalculateAndSave(receive);

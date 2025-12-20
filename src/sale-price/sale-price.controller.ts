@@ -27,7 +27,7 @@ export class SalePriceController {
   }
 
   @Get('/current')
-  async getCurrent() {
+  async getCurrent(): Promise<SalePriceResponseDto> {
     const current = await this.salePriceService.getByDate(new Date());
     return plainToInstance(SalePriceResponseDto, current);
   }

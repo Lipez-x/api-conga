@@ -26,15 +26,13 @@ export class LocalProductionService {
     private readonly receivesService: ReceivesService,
   ) {}
 
-  async register(registerLocalProductionDto: RegisterLocalProductionDto) {
+  async register(dto: RegisterLocalProductionDto) {
     try {
       const production = this.localProductionRepository.create({
-        ...registerLocalProductionDto,
+        ...dto,
       });
 
-      const receive = await this.receivesService.findOrCreate(
-        registerLocalProductionDto.date,
-      );
+      const receive = await this.receivesService.findOrCreate(dto.date);
 
       await this.localProductionRepository.save(production);
 
@@ -121,7 +119,7 @@ export class LocalProductionService {
     }
   }
 
-  async update(id: string, updateLocalProductionDto: UpdateLocalProductionDto) {
+  async update(id: string, dto: UpdateLocalProductionDto) {
     try {
       const localProduction = await this.localProductionRepository.findOne({
         where: { id },
@@ -135,14 +133,14 @@ export class LocalProductionService {
       }
 
       const date = localProduction.date;
-      Object.assign(localProduction, updateLocalProductionDto);
+      Object.assign(localProduction, dto);
 
       await this.localProductionRepository.save(localProduction);
 
       const receive = await this.receivesService.replaceLocalProduction(
         date,
         localProduction,
-        updateLocalProductionDto.date,
+        dto.date,
       );
 
       await this.receivesService.recalculateAndSave(receive);

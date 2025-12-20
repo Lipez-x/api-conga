@@ -31,12 +31,8 @@ export class LocalProductionController {
   ) {}
 
   @Post('/register')
-  async register(
-    @Body() registerLocalProductionDto: RegisterLocalProductionDto,
-  ): Promise<void> {
-    return await this.localProductionService.register(
-      registerLocalProductionDto,
-    );
+  async register(@Body() dto: RegisterLocalProductionDto): Promise<void> {
+    return await this.localProductionService.register(dto);
   }
 
   @Get()
@@ -54,12 +50,9 @@ export class LocalProductionController {
   @Put('/:id')
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateLocalProductionDto: UpdateLocalProductionDto,
+    @Body() dto: UpdateLocalProductionDto,
   ): Promise<{ message: string }> {
-    return await this.localProductionService.update(
-      id,
-      updateLocalProductionDto,
-    );
+    return await this.localProductionService.update(id, dto);
   }
 
   @Delete('/:id')

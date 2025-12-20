@@ -25,15 +25,15 @@ export class OperationalCostService {
     private readonly expensesService: ExpensesService,
   ) {}
 
-  async register(registerOperationalCostDto: RegisterOperationalCostDto) {
+  async register(dto: RegisterOperationalCostDto) {
     try {
       const operationalCost = this.operationalCostRepository.create({
         expense: {
-          date: registerOperationalCostDto.date,
-          value: registerOperationalCostDto.value,
+          date: dto.date,
+          value: dto.value,
           category: ExpenseType.OPERATIONAL,
         },
-        ...registerOperationalCostDto,
+        ...dto,
       });
 
       await this.operationalCostRepository.save(operationalCost);
@@ -121,7 +121,7 @@ export class OperationalCostService {
     }
   }
 
-  async update(id: string, updateOperationalCostDto: UpdateOperationalCostDto) {
+  async update(id: string, dto: UpdateOperationalCostDto) {
     try {
       const operationalCost = await this.operationalCostRepository.findOne({
         where: { id },
@@ -134,11 +134,11 @@ export class OperationalCostService {
         );
       }
 
-      Object.assign(operationalCost, updateOperationalCostDto);
-      if (updateOperationalCostDto.date || updateOperationalCostDto.value) {
+      Object.assign(operationalCost, dto);
+      if (dto.date || dto.value) {
         Object.assign(operationalCost.expense, {
-          date: updateOperationalCostDto.date,
-          value: updateOperationalCostDto.value,
+          date: dto.date,
+          value: dto.value,
         });
       }
 

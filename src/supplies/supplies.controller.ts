@@ -28,17 +28,13 @@ export class SuppliesController {
 
   @Post('/register')
   @UsePipes(ValidationPipe)
-  async register(
-    @Body() registerSuppliesDto: RegisterSuppliesDto,
-  ): Promise<void> {
-    return await this.suppliesService.register(registerSuppliesDto);
+  async register(@Body() dto: RegisterSuppliesDto): Promise<void> {
+    return await this.suppliesService.register(dto);
   }
 
   @Get()
   @UsePipes(ValidationPipe)
-  async findAll(
-    @Query() filters: FilterSuppliesDto,
-  ): Promise<{
+  async findAll(@Query() filters: FilterSuppliesDto): Promise<{
     total: number;
     page: number;
     limit: number;
@@ -61,9 +57,9 @@ export class SuppliesController {
   @UsePipes(ValidationPipe)
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateSuppliesDto: UpdateSuppliesDto,
+    @Body() dto: UpdateSuppliesDto,
   ): Promise<{ message: string }> {
-    return await this.suppliesService.update(id, updateSuppliesDto);
+    return await this.suppliesService.update(id, dto);
   }
 
   @Delete('/:id')

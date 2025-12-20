@@ -18,9 +18,6 @@ import { RegisterProducerProductionDto } from './dtos/register-producer-producti
 import { ProducerProductionService } from './producer-production.service';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
-import { RequestStatus } from './enums/request-status.enum';
-import { ProducerProductionRequestService } from './producer-production-request.service';
-import { User } from 'src/users/entities/user.entity';
 import { paginatedResponse } from 'src/common/helpers/paginated-response';
 import { ProducerProductionResponseDto } from './dtos/producer-production-response.dto';
 
@@ -33,18 +30,12 @@ export class ProducerProductionController {
 
   @Roles(UserRole.ADMIN)
   @Post('/register')
-  async register(
-    @Body() registerProducerProductionDto: RegisterProducerProductionDto,
-  ): Promise<void> {
-    return await this.producerProductionService.register(
-      registerProducerProductionDto,
-    );
+  async register(@Body() dto: RegisterProducerProductionDto): Promise<void> {
+    return await this.producerProductionService.register(dto);
   }
 
   @Get()
-  async findAll(
-    @Query() filters: FilterProducerProductionDto,
-  ): Promise<{
+  async findAll(@Query() filters: FilterProducerProductionDto): Promise<{
     total: number;
     page: number;
     limit: number;
@@ -59,12 +50,9 @@ export class ProducerProductionController {
   @Put('/:id')
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateProducerProductionDto: UpdateProducerProductionDto,
+    @Body() dto: UpdateProducerProductionDto,
   ): Promise<{ message: string }> {
-    return await this.producerProductionService.update(
-      id,
-      updateProducerProductionDto,
-    );
+    return await this.producerProductionService.update(id, dto);
   }
 
   @Roles(UserRole.ADMIN)

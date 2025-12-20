@@ -25,14 +25,14 @@ export class SuppliesService {
     private readonly expensesService: ExpensesService,
   ) {}
 
-  async register(registerSuppliesDto: RegisterSuppliesDto) {
+  async register(dto: RegisterSuppliesDto) {
     try {
       const supply = this.suppliesRepository.create({
         expense: {
-          date: registerSuppliesDto.date,
+          date: dto.date,
           category: ExpenseType.SUPPLIES,
         },
-        ...registerSuppliesDto,
+        ...dto,
       });
 
       await this.suppliesRepository.save(supply);
@@ -128,7 +128,7 @@ export class SuppliesService {
     }
   }
 
-  async update(id: string, updateSuppliesDto: UpdateSuppliesDto) {
+  async update(id: string, dto: UpdateSuppliesDto) {
     try {
       const supply = await this.suppliesRepository.findOne({
         where: { id },
@@ -141,10 +141,10 @@ export class SuppliesService {
         );
       }
 
-      Object.assign(supply, updateSuppliesDto);
-      if (updateSuppliesDto.date) {
+      Object.assign(supply, dto);
+      if (dto.date) {
         Object.assign(supply.expense, {
-          date: updateSuppliesDto.date,
+          date: dto.date,
         });
       }
 

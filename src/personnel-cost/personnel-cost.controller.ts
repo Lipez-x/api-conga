@@ -28,10 +28,8 @@ export class PersonnelCostController {
   constructor(private readonly personnelCostService: PersonnelCostService) {}
 
   @Post('/register')
-  async register(
-    @Body() registerPersonnelCostDto: RegisterPersonnelCostDto,
-  ): Promise<void> {
-    return await this.personnelCostService.register(registerPersonnelCostDto);
+  async register(@Body() dto: RegisterPersonnelCostDto): Promise<void> {
+    return await this.personnelCostService.register(dto);
   }
 
   @Get()
@@ -57,9 +55,9 @@ export class PersonnelCostController {
   @Put('/:id')
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updatePersonnelCostDto: UpdatePersonnelCostDto,
+    @Body() dto: UpdatePersonnelCostDto,
   ): Promise<{ message: string }> {
-    return await this.personnelCostService.update(id, updatePersonnelCostDto);
+    return await this.personnelCostService.update(id, dto);
   }
 
   @Delete('/:id')

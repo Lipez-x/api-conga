@@ -2,7 +2,6 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ProductionsService } from './productions.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/user-role.enum';
-import { filter } from 'rxjs';
 import { GetDailyProductionDto } from './dtos/get-daily-production.dto';
 import { plainToInstance } from 'class-transformer';
 import { GetGroupedProductionDto } from './dtos/get-grouped-production.dto';
@@ -14,9 +13,7 @@ import { GetDailyProductionResponseDto } from './dtos/get-daily-production-respo
 export class ProductionsController {
   constructor(private readonly productionsService: ProductionsService) {}
   @Get('/daily')
-  async getDailyProduction(
-    @Query() filters: GetDailyProductionDto,
-  ): Promise<{
+  async getDailyProduction(@Query() filters: GetDailyProductionDto): Promise<{
     total: number;
     page: number;
     limit: number;

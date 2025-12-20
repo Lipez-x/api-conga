@@ -30,14 +30,12 @@ export class UtilityCostController {
 
   @Post('/register')
   @UsePipes(ValidationPipe)
-  async register(@Body() registerUtilityCostDto: RegisterUtilityCostDto) {
-    return await this.utilityCostService.register(registerUtilityCostDto);
+  async register(@Body() dto: RegisterUtilityCostDto) {
+    return await this.utilityCostService.register(dto);
   }
 
   @Get()
-  async findAll(
-    @Query() filters: UtilityCostFilterDto,
-  ): Promise<{
+  async findAll(@Query() filters: UtilityCostFilterDto): Promise<{
     total: number;
     page: number;
     limit: number;
@@ -59,9 +57,9 @@ export class UtilityCostController {
   @Put('/:id')
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateUtilityCostDto: UpdateUtilityCostDto,
+    @Body() dto: UpdateUtilityCostDto,
   ): Promise<{ message: string }> {
-    return await this.utilityCostService.update(id, updateUtilityCostDto);
+    return await this.utilityCostService.update(id, dto);
   }
 
   @Delete('/:id')

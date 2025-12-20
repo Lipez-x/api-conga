@@ -30,12 +30,8 @@ export class ProducerProductionRequestController {
   ) {}
 
   @Post('/register')
-  async register(
-    @Body() registerProducerProductionDto: RegisterProducerProductionDto,
-  ): Promise<void> {
-    return await this.producerProductionRequestService.register(
-      registerProducerProductionDto,
-    );
+  async register(@Body() dto: RegisterProducerProductionDto): Promise<void> {
+    return await this.producerProductionRequestService.register(dto);
   }
 
   @Get()
@@ -73,12 +69,9 @@ export class ProducerProductionRequestController {
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateProducerProductionDto: UpdateProducerProductionDto,
+    @Body() dto: UpdateProducerProductionDto,
   ): Promise<void> {
-    return await this.producerProductionRequestService.update(
-      id,
-      updateProducerProductionDto,
-    );
+    return await this.producerProductionRequestService.update(id, dto);
   }
 
   @Delete('/:id')
