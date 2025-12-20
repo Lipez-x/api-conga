@@ -75,7 +75,9 @@ export class UsersController {
   @Roles(UserRole.ADMIN)
   @Delete('/:id')
   @UseInterceptors(CheckCollaboratorInterceptor)
-  async deleteCollaborator(@Param('id', new ParseUUIDPipe()) id: string) {
+  async deleteCollaborator(
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<{ message: string }> {
     return await this.usersService.deleteCollaborator(id);
   }
 }

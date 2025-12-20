@@ -30,7 +30,7 @@ export class UtilityCostController {
 
   @Post('/register')
   @UsePipes(ValidationPipe)
-  async register(@Body() dto: RegisterUtilityCostDto) {
+  async register(@Body() dto: RegisterUtilityCostDto): Promise<void> {
     return await this.utilityCostService.register(dto);
   }
 
