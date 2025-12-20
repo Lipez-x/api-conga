@@ -18,7 +18,7 @@ Backend desenvolvido para o ConGa, um software desktop especializado para pequen
 
 ### Etapas
 
-#### 1. Clone o repositório 
+#### 1. Clone o repositório
 
 ```bash
 git clone https://github.com/Lipez-x/api-conga.git
@@ -68,3 +68,19 @@ npm run migration:run
 ```bash
 npm run start:dev
 ```
+
+## Contribuidores
+
+<a href="https://github.com/Lipez-x/api-conga/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Lipez-x/api-conga" />
+</a>
+
+## Toda a equipe ConGa
+
+| 🧑‍💻                                                                                                        | Nome              | GitHub                                                   | LinkedIn                                                                      |
+| --------------------------------------------------------------------------------------------------------- | ----------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| <img src="https://avatars.githubusercontent.com/u/100172647?v=4" width="50" style="border-radius:50%;" /> | Felipe Lima       | [@Lipez-x](https://github.com/Lipez-x)                   | [Felipe Lima](https://www.linkedin.com/in/felipelima-dev/)                    |
+| <img src="https://avatars.githubusercontent.com/u/179061047?v=4" width="50" style="border-radius:50%;" /> | Lizandra Pinheiro | [@lizandrapinheiro](https://github.com/lizandrapinheiro) | [Lizandra Pinheiro](https://www.linkedin.com/in/lizandra-pinheiro-6b72b2255/) |
+| <img src="https://avatars.githubusercontent.com/u/117535252?v=4" width="50" style="border-radius:50%;" /> | Eduardo Almeida   | [@EduardoAlmeida10](https://github.com/EduardoAlmeida10) | [Eduardo Almeida](https://www.linkedin.com/in/eduardo-almeida-bb05072a9/)     |
+| <img src="https://avatars.githubusercontent.com/u/95323145?v=4" width="50" style="border-radius:50%;" />  | Tobias Alves      | [@TobiasTac](https://github.com/TobiasTac)               | [Tobias Alves](https://www.linkedin.com/in/tobiasac/)                         |
+| <img src="https://avatars.githubusercontent.com/u/99351206?v=4" width="50" style="border-radius:50%;" />  | Henrique Silva    | [@fco-henrique](https://github.com/fco-henrique)         | [Henrique Silva](https://www.linkedin.com/in/henriq-nunes/)                   |
