@@ -18,6 +18,8 @@ Backend desenvolvido para o ConGa, um software desktop especializado para pequen
 
 ### Etapas
 
+#### 1. Clone o repositório 
+
 ```bash
 git clone https://github.com/Lipez-x/api-conga.git
 cd api-conga
