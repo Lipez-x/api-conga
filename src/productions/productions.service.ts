@@ -7,6 +7,7 @@ import { DataSource } from 'typeorm';
 import { GetDailyProductionDto } from './dtos/get-daily-production.dto';
 import { LocalProduction } from './local/entities/local-production.entity';
 import { ProducerProduction } from './producer/entities/producer-production.entity';
+import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
 
 @Injectable()
 export class ProductionsService {
@@ -61,8 +62,8 @@ export class ProductionsService {
       .leftJoin(`(${producerQuery})`, 'p', 'p.date = d.date')
       .orderBy('d.date', 'DESC');
 
-    if (dateFrom) query.andWhere('d.date >= :dateFrom', { dateFrom });
-    if (dateTo) query.andWhere('d.date <= :dateTo', { dateTo });
+    applyPeriodFilter(query, filters, { alias: 'd' });
+
     try {
       const rows = await query.getRawMany();
 

@@ -20,6 +20,7 @@ import { UpdateLocalProductionDto } from './dtos/update-local-production.dto';
 import { LocalProductionPeriodFilter } from './dtos/filter-period-local-production.dto';
 import { paginatedResponse } from 'src/common/helpers/paginated-response';
 import { LocalProductionResponseDto } from './dtos/local-production-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Roles(UserRole.ADMIN)
 @UsePipes(ValidationPipe)
@@ -69,7 +70,8 @@ export class LocalProductionController {
   @Get('/grouped')
   async getGrouped(
     @Query() filters: LocalProductionPeriodFilter,
-  ): Promise<any[]> {
-    return await this.localProductionService.getGrouped(filters);
+  ): Promise<LocalProductionResponseDto[]> {
+    const grouped = await this.localProductionService.getGrouped(filters);
+    return plainToInstance(LocalProductionResponseDto, grouped);
   }
 }
