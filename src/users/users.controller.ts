@@ -25,13 +25,14 @@ import { User } from './entities/user.entity';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { paginatedResponse } from 'src/common/helpers/paginated-response';
+import { IsPublic } from 'src/common/decorators/is-public.decorator';
 
 @UsePipes(ValidationPipe)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Roles(UserRole.ADMIN)
+  @IsPublic()
   @Post('/register')
   async register(@Body() dto: RegisterUserDto): Promise<UserResponseDto> {
     const user = this.usersService.register(dto);

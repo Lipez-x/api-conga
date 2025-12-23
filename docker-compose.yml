@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: conga_database
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    image: felipelr7/conga-api:latest
+    container_name: conga-api
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+    env_file:
+      - .env.production.local
+    restart: unless-stopped
+
+volumes:
+  pgdata:
