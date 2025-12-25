@@ -25,7 +25,7 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 
 @Controller('productions/producer/requests')
-@UsePipes(ValidationPipe)
+@UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 export class ProducerProductionRequestController {
   constructor(
     private readonly producerProductionRequestService: ProducerProductionRequestService,
@@ -42,7 +42,7 @@ export class ProducerProductionRequestController {
   @Get()
   async findAll(
     @Query() filters: FilterProducerProductionDto,
-    @Query('status') status: RequestStatus,
+    @CurrentUser() user: User,
   ): Promise<{
     total: number;
     page: number;
@@ -52,7 +52,7 @@ export class ProducerProductionRequestController {
   }> {
     const result = await this.producerProductionRequestService.findAll(
       filters,
-      status,
+      user,
     );
 
     return paginatedResponse(result, ProducerProductionRequestResponseDto);
@@ -71,7 +71,6 @@ export class ProducerProductionRequestController {
   }
 
   @Put('/:id')
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateProducerProductionDto,

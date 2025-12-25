@@ -16,6 +16,7 @@ import { UpdateProducerProductionDto } from './dtos/update-producer-production.d
 import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
 import { paginate } from 'src/common/helpers/paginate';
 import { User } from 'src/users/entities/user.entity';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 @Injectable()
 export class ProducerProductionRequestService {
@@ -105,11 +106,12 @@ export class ProducerProductionRequestService {
     );
   }
 
-  async findAll(filters: FilterProducerProductionDto, status: RequestStatus) {
+  async findAll(filters: FilterProducerProductionDto, user: User) {
     const {
       producerName,
       totalQuantityMin,
       totalQuantityMax,
+      status,
       page = 1,
       limit = 10,
     } = filters;
@@ -120,6 +122,10 @@ export class ProducerProductionRequestService {
       .orderBy('request.date', 'DESC');
 
     applyPeriodFilter(query, filters, { alias: 'request' });
+
+    if (user.role === UserRole.COLLABORATOR) {
+      query.andWhere('request.createdBy = :userId', { userId: user.id });
+    }
 
     if (status) query.andWhere('request.status = :status', { status });
     if (producerName)
