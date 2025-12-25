@@ -5,7 +5,9 @@ import {
   IsNumber,
   Min,
   IsString,
+  IsEnum,
 } from 'class-validator';
+import { RequestStatus } from '../enums/request-status.enum';
 
 export class FilterProducerProductionDto {
   @IsDateString()
@@ -31,6 +33,10 @@ export class FilterProducerProductionDto {
   @Min(0)
   @IsOptional()
   totalQuantityMax?: number;
+
+  @IsOptional()
+  @IsEnum(RequestStatus)
+  status?: RequestStatus;
 
   @IsOptional()
   @Type(() => Number)
