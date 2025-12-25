@@ -1,4 +1,5 @@
 import { Receive } from 'src/receives/entities/receive.entity';
+import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   Entity,
@@ -31,4 +32,8 @@ export class ProducerProduction {
     scale: 2,
   })
   totalQuantity: number;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'createdBy' })
+  createdBy?: User;
 }
