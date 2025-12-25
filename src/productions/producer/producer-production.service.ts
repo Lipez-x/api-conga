@@ -28,10 +28,11 @@ export class ProducerProductionService {
     private readonly receivesService: ReceivesService,
   ) {}
 
-  async register(dto: RegisterProducerProductionDto) {
+  async register(dto: RegisterProducerProductionDto, user: User) {
     try {
       const production = this.producerProductionRepository.create({
         ...dto,
+        createdBy: user,
       });
 
       const receive = await this.receivesService.findOrCreate(dto.date);

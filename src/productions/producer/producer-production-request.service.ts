@@ -42,7 +42,7 @@ export class ProducerProductionRequestService {
       limitDate.setDate(limitDate.getDate() - 1);
 
       if (date > limitDate) {
-        return await this.producerProductionService.register(dto);
+        return await this.producerProductionService.register(dto, user);
       }
 
       const request = this.producerProductionRequestRepository.create({
@@ -63,6 +63,7 @@ export class ProducerProductionRequestService {
       async (manager) => {
         const request = await manager.findOne(ProducerProductionRequest, {
           where: { id },
+          relations: ['createdBy'],
         });
 
         if (!request) {
@@ -73,11 +74,14 @@ export class ProducerProductionRequestService {
 
         request.status = RequestStatus.ACCEPTED;
 
-        await this.producerProductionService.register({
-          date: request.date,
-          producerName: request.producerName,
-          totalQuantity: request.totalQuantity,
-        });
+        await this.producerProductionService.register(
+          {
+            date: request.date,
+            producerName: request.producerName,
+            totalQuantity: request.totalQuantity,
+          },
+          request.createdBy,
+        );
 
         await manager.save(request);
         await manager.softDelete(ProducerProductionRequest, request.id);
