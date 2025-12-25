@@ -20,7 +20,4 @@ export class ProducerProductionRequestResponseDto {
 
   @Expose()
   validatedAt: string;
-
-  @Expose()
-  createdBy: UserResponseDto;
 }
