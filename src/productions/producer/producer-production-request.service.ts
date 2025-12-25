@@ -190,15 +190,22 @@ export class ProducerProductionRequestService {
     }
   }
 
-  async delete(id: string) {
+  async delete(id: string, user: User) {
     try {
       const request = await this.producerProductionRequestRepository.findOne({
         where: { id },
+        relations: ['createdBy'],
       });
 
       if (!request) {
         throw new NotFoundException(
           `Produção local de id ${id} não encontrada`,
+        );
+      }
+
+      if (request.createdBy.id !== user.id) {
+        throw new ForbiddenException(
+          'Você não tem permissão para alterar essa solicitação',
         );
       }
 

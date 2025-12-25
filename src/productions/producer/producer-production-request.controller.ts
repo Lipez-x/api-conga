@@ -79,7 +79,10 @@ export class ProducerProductionRequestController {
   }
 
   @Delete('/:id')
-  async delete(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
-    return await this.producerProductionRequestService.delete(id);
+  async delete(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    return await this.producerProductionRequestService.delete(id, user);
   }
 }
