@@ -15,6 +15,8 @@ import { ReceivesService } from 'src/receives/receives.service';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
 import { paginate } from 'src/common/helpers/paginate';
+import { User } from 'src/users/entities/user.entity';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 @Injectable()
 export class ProducerProductionService {
@@ -26,10 +28,11 @@ export class ProducerProductionService {
     private readonly receivesService: ReceivesService,
   ) {}
 
-  async register(dto: RegisterProducerProductionDto) {
+  async register(dto: RegisterProducerProductionDto, user: User) {
     try {
       const production = this.producerProductionRepository.create({
         ...dto,
+        createdBy: user,
       });
 
       const receive = await this.receivesService.findOrCreate(dto.date);
@@ -44,7 +47,7 @@ export class ProducerProductionService {
     }
   }
 
-  async findAll(filters: FilterProducerProductionDto) {
+  async findAll(filters: FilterProducerProductionDto, user: User) {
     const {
       producerName,
       totalQuantityMin,
@@ -58,6 +61,10 @@ export class ProducerProductionService {
       .orderBy('production.date', 'DESC');
 
     applyPeriodFilter(query, filters, { alias: 'production' });
+
+    if (user.role === UserRole.COLLABORATOR) {
+      query.andWhere('production.createdBy = :userId', { userId: user.id });
+    }
 
     if (producerName)
       query.andWhere('production.producer_name ILIKE :producerName', {

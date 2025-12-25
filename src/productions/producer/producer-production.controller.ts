@@ -19,6 +19,8 @@ import { FilterProducerProductionDto } from './dtos/filter-producer-production.d
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 import { paginatedResponse } from 'src/common/helpers/paginated-response';
 import { ProducerProductionResponseDto } from './dtos/producer-production-response.dto';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { User } from 'src/users/entities/user.entity';
 
 @UsePipes(ValidationPipe)
 @Controller('productions/producer')
@@ -29,19 +31,25 @@ export class ProducerProductionController {
 
   @Roles(UserRole.ADMIN)
   @Post('/register')
-  async register(@Body() dto: RegisterProducerProductionDto): Promise<void> {
-    return await this.producerProductionService.register(dto);
+  async register(
+    @Body() dto: RegisterProducerProductionDto,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    return await this.producerProductionService.register(dto, user);
   }
 
   @Get()
-  async findAll(@Query() filters: FilterProducerProductionDto): Promise<{
+  async findAll(
+    @Query() filters: FilterProducerProductionDto,
+    @CurrentUser() user: User,
+  ): Promise<{
     total: number;
     page: number;
     limit: number;
     totalPages: number;
     data: ProducerProductionResponseDto[];
   }> {
-    const result = await this.producerProductionService.findAll(filters);
+    const result = await this.producerProductionService.findAll(filters, user);
     return paginatedResponse(result, ProducerProductionResponseDto);
   }
 

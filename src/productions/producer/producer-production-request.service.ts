@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpException,
   Injectable,
   InternalServerErrorException,
@@ -15,6 +16,8 @@ import { FilterProducerProductionDto } from './dtos/filter-producer-production.d
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
 import { paginate } from 'src/common/helpers/paginate';
+import { User } from 'src/users/entities/user.entity';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 @Injectable()
 export class ProducerProductionRequestService {
@@ -26,7 +29,7 @@ export class ProducerProductionRequestService {
     private readonly producerProductionService: ProducerProductionService,
   ) {}
 
-  async register(dto: RegisterProducerProductionDto) {
+  async register(dto: RegisterProducerProductionDto, user: User) {
     try {
       const date = new Date(dto.date);
 
@@ -40,12 +43,13 @@ export class ProducerProductionRequestService {
       limitDate.setDate(limitDate.getDate() - 1);
 
       if (date > limitDate) {
-        return await this.producerProductionService.register(dto);
+        return await this.producerProductionService.register(dto, user);
       }
 
       const request = this.producerProductionRequestRepository.create({
         ...dto,
         status: RequestStatus.PENDING,
+        createdBy: user,
       });
 
       await this.producerProductionRequestRepository.save(request);
@@ -60,6 +64,7 @@ export class ProducerProductionRequestService {
       async (manager) => {
         const request = await manager.findOne(ProducerProductionRequest, {
           where: { id },
+          relations: ['createdBy'],
         });
 
         if (!request) {
@@ -70,11 +75,14 @@ export class ProducerProductionRequestService {
 
         request.status = RequestStatus.ACCEPTED;
 
-        await this.producerProductionService.register({
-          date: request.date,
-          producerName: request.producerName,
-          totalQuantity: request.totalQuantity,
-        });
+        await this.producerProductionService.register(
+          {
+            date: request.date,
+            producerName: request.producerName,
+            totalQuantity: request.totalQuantity,
+          },
+          request.createdBy,
+        );
 
         await manager.save(request);
         await manager.softDelete(ProducerProductionRequest, request.id);
@@ -103,11 +111,12 @@ export class ProducerProductionRequestService {
     );
   }
 
-  async findAll(filters: FilterProducerProductionDto, status: RequestStatus) {
+  async findAll(filters: FilterProducerProductionDto, user: User) {
     const {
       producerName,
       totalQuantityMin,
       totalQuantityMax,
+      status,
       page = 1,
       limit = 10,
     } = filters;
@@ -118,6 +127,10 @@ export class ProducerProductionRequestService {
       .orderBy('request.date', 'DESC');
 
     applyPeriodFilter(query, filters, { alias: 'request' });
+
+    if (user.role === UserRole.COLLABORATOR) {
+      query.andWhere('request.createdBy = :userId', { userId: user.id });
+    }
 
     if (status) query.andWhere('request.status = :status', { status });
     if (producerName)
@@ -141,11 +154,11 @@ export class ProducerProductionRequestService {
     }
   }
 
-  async update(id: string, dto: UpdateProducerProductionDto) {
+  async update(id: string, dto: UpdateProducerProductionDto, user: User) {
     try {
-      const request = await this.producerProductionRequestRepository.preload({
-        id,
-        ...dto,
+      const request = await this.producerProductionRequestRepository.findOne({
+        where: { id },
+        relations: ['createdBy'],
       });
 
       if (!request) {
@@ -154,7 +167,18 @@ export class ProducerProductionRequestService {
         );
       }
 
-      await this.producerProductionRequestRepository.save(request);
+      if (request.createdBy.id !== user.id) {
+        throw new ForbiddenException(
+          'Você não tem permissão para alterar essa solicitação',
+        );
+      }
+
+      const updatedRequest = this.producerProductionRequestRepository.merge(
+        request,
+        dto,
+      );
+
+      await this.producerProductionRequestRepository.save(updatedRequest);
     } catch (error) {
       this.logger.error(error.message);
 
@@ -166,15 +190,22 @@ export class ProducerProductionRequestService {
     }
   }
 
-  async delete(id: string) {
+  async delete(id: string, user: User) {
     try {
       const request = await this.producerProductionRequestRepository.findOne({
         where: { id },
+        relations: ['createdBy'],
       });
 
       if (!request) {
         throw new NotFoundException(
           `Produção local de id ${id} não encontrada`,
+        );
+      }
+
+      if (request.createdBy.id !== user.id) {
+        throw new ForbiddenException(
+          'Você não tem permissão para alterar essa solicitação',
         );
       }
 
