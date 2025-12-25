@@ -2,9 +2,12 @@ import {
   Column,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { RequestStatus } from '../enums/request-status.enum';
+import { User } from 'src/users/entities/user.entity';
 
 @Entity('producer_production_request')
 export class ProducerProductionRequest {
@@ -27,6 +30,10 @@ export class ProducerProductionRequest {
 
   @Column({ type: 'enum', enum: RequestStatus })
   status: RequestStatus;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'createdBy' })
+  createdBy: User;
 
   @DeleteDateColumn()
   validatedAt: Date;
