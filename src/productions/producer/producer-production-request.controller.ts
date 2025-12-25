@@ -21,6 +21,8 @@ import { RequestStatus } from './enums/request-status.enum';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 import { paginatedResponse } from 'src/common/helpers/paginated-response';
 import { ProducerProductionRequestResponseDto } from './dtos/producer-production-request-response.dto';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { User } from 'src/users/entities/user.entity';
 
 @Controller('productions/producer/requests')
 @UsePipes(ValidationPipe)
@@ -30,8 +32,11 @@ export class ProducerProductionRequestController {
   ) {}
 
   @Post('/register')
-  async register(@Body() dto: RegisterProducerProductionDto): Promise<void> {
-    return await this.producerProductionRequestService.register(dto);
+  async register(
+    @Body() dto: RegisterProducerProductionDto,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    return await this.producerProductionRequestService.register(dto, user);
   }
 
   @Get()

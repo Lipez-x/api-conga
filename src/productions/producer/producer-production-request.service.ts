@@ -15,6 +15,7 @@ import { FilterProducerProductionDto } from './dtos/filter-producer-production.d
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 import { applyPeriodFilter } from 'src/common/helpers/apply-period-filters';
 import { paginate } from 'src/common/helpers/paginate';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ProducerProductionRequestService {
@@ -26,7 +27,7 @@ export class ProducerProductionRequestService {
     private readonly producerProductionService: ProducerProductionService,
   ) {}
 
-  async register(dto: RegisterProducerProductionDto) {
+  async register(dto: RegisterProducerProductionDto, user: User) {
     try {
       const date = new Date(dto.date);
 
@@ -46,6 +47,7 @@ export class ProducerProductionRequestService {
       const request = this.producerProductionRequestRepository.create({
         ...dto,
         status: RequestStatus.PENDING,
+        createdBy: user,
       });
 
       await this.producerProductionRequestRepository.save(request);

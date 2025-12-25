@@ -1,4 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
+import { UserResponseDto } from 'src/users/dtos/user-response.dto';
 
 export class ProducerProductionRequestResponseDto {
   @Expose()
@@ -19,4 +20,7 @@ export class ProducerProductionRequestResponseDto {
 
   @Expose()
   validatedAt: string;
+
+  @Expose()
+  createdBy: UserResponseDto;
 }
