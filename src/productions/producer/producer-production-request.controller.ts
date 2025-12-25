@@ -17,7 +17,6 @@ import { UserRole } from 'src/users/enums/user-role.enum';
 import { ProducerProductionRequestService } from './producer-production-request.service';
 import { RegisterProducerProductionDto } from './dtos/register-producer-production.dto';
 import { FilterProducerProductionDto } from './dtos/filter-producer-production.dto';
-import { RequestStatus } from './enums/request-status.enum';
 import { UpdateProducerProductionDto } from './dtos/update-producer-production.dto';
 import { paginatedResponse } from 'src/common/helpers/paginated-response';
 import { ProducerProductionRequestResponseDto } from './dtos/producer-production-request-response.dto';
@@ -74,8 +73,9 @@ export class ProducerProductionRequestController {
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateProducerProductionDto,
+    @CurrentUser() user: User,
   ): Promise<void> {
-    return await this.producerProductionRequestService.update(id, dto);
+    return await this.producerProductionRequestService.update(id, dto, user);
   }
 
   @Delete('/:id')

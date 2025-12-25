@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpException,
   Injectable,
   InternalServerErrorException,
@@ -153,11 +154,11 @@ export class ProducerProductionRequestService {
     }
   }
 
-  async update(id: string, dto: UpdateProducerProductionDto) {
+  async update(id: string, dto: UpdateProducerProductionDto, user: User) {
     try {
-      const request = await this.producerProductionRequestRepository.preload({
-        id,
-        ...dto,
+      const request = await this.producerProductionRequestRepository.findOne({
+        where: { id },
+        relations: ['createdBy'],
       });
 
       if (!request) {
@@ -166,7 +167,18 @@ export class ProducerProductionRequestService {
         );
       }
 
-      await this.producerProductionRequestRepository.save(request);
+      if (request.createdBy.id !== user.id) {
+        throw new ForbiddenException(
+          'Você não tem permissão para alterar essa solicitação',
+        );
+      }
+
+      const updatedRequest = this.producerProductionRequestRepository.merge(
+        request,
+        dto,
+      );
+
+      await this.producerProductionRequestRepository.save(updatedRequest);
     } catch (error) {
       this.logger.error(error.message);
 
