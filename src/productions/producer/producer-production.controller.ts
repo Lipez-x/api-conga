@@ -31,8 +31,11 @@ export class ProducerProductionController {
 
   @Roles(UserRole.ADMIN)
   @Post('/register')
-  async register(@Body() dto: RegisterProducerProductionDto): Promise<void> {
-    return await this.producerProductionService.register(dto);
+  async register(
+    @Body() dto: RegisterProducerProductionDto,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    return await this.producerProductionService.register(dto, user);
   }
 
   @Get()
