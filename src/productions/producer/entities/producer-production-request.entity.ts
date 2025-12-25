@@ -31,7 +31,7 @@ export class ProducerProductionRequest {
   @Column({ type: 'enum', enum: RequestStatus })
   status: RequestStatus;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'createdBy' })
   createdBy: User;
 
