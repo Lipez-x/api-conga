@@ -78,4 +78,41 @@ describe('ProductionsService', () => {
       );
     });
   });
+
+  describe('getDaily', () => {
+    it('should return paginated daily production data', async () => {
+      const filters = { page: 1, limit: 10 };
+      const mockData = [
+        { date: '2023-01-01', total: 100 },
+        { date: '2023-01-02', total: 200 }
+      ];
+
+      mockQueyBuilder.getRawMany
+        .mockResolvedValueOnce(mockData)
+        .mockResolvedValueOnce(mockData);
+
+      const result = await service.getDaily(filters);
+
+      expect(result).toEqual({
+        total: 2,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        data: mockData,
+      });
+
+      expect(mockQueyBuilder.offset).toHaveBeenCalledWith(0);
+      expect(mockQueyBuilder.limit).toHaveBeenCalledWith(10);
+    });
+
+    it('should throw InternalServerErrorException on database error', async () => {
+      const filters = { page: 1, limit: 10 };
+
+      mockQueyBuilder.getRawMany.mockRejectedValue(new Error('DB Error'));
+
+      await expect(service.getDaily(filters)).rejects.toThrow(
+        InternalServerErrorException,
+      );
+    });
+  });
 });
