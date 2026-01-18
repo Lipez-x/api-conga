@@ -84,7 +84,7 @@ describe('ProductionsService', () => {
       const filters = { page: 1, limit: 10 };
       const mockData = [
         { date: '2023-01-01', total: 100 },
-        { date: '2023-01-02', total: 200 }
+        { date: '2023-01-02', total: 200 },
       ];
 
       mockQueyBuilder.getRawMany
@@ -113,6 +113,38 @@ describe('ProductionsService', () => {
       await expect(service.getDaily(filters)).rejects.toThrow(
         InternalServerErrorException,
       );
+    });
+  });
+
+  describe('getGroupedByMonth', () => {
+    it('should return production data grouped by month', async () => {
+      const mockResult = [
+        {
+          month: '2025-11',
+          localTotal: '100',
+          producerTotal: '50',
+          total: '150',
+        },
+        {
+          month: '2025-12',
+          localTotal: '200',
+          producerTotal: '100',
+          total: '300',
+        },
+      ];
+
+      mockQueyBuilder.getRawMany.mockResolvedValue(mockResult);
+
+      const result = await service.getGroupedByMonth();
+
+      expect(result).toEqual(mockResult);
+      expect(mockQueyBuilder.orderBy).toHaveBeenCalledWith('m.month', 'DESC');
+    });
+
+    it('should throw InternalServerErrorException on database error', async () => {
+      mockQueyBuilder.getRawMany.mockRejectedValue(new Error('SQL Error'));
+
+      await expect(service.getGroupedByMonth()).rejects.toThrow(InternalServerErrorException);
     });
   });
 });
